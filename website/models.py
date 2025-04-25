@@ -13,6 +13,7 @@ class Employee(db.Model, UserMixin):
     Email = db.Column(db.String(100), unique=True, nullable=False)
     Pass = db.Column(db.String(100), nullable=False)
     Date_Of_Birth = db.Column(db.Date)
+
     def get_id(self):
         return str(self.Employee_ID)
 
