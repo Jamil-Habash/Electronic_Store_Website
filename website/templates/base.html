@@ -14,6 +14,14 @@
                 href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
                 crossorigin="anonymous"
         />
+        <style>
+            body {
+                background-image: url('{{ url_for("static", filename="pic.jpg") }}');
+                background-size: cover;
+                background-position: center;
+                background-attachment: fixed;
+            }
+        </style>
         <title>{% block title %}Home{% endblock %}</title>
     </head>
     <body>
@@ -26,7 +34,6 @@
                     {% if user.is_authenticated%}
                         {% if user.Email == "manager@outlook.com" %}
                             <a class="nav-item nav-link" id="home" href="/">Home</a>
-                            <a class="nav-item nav-link" id="hire" href="/add_employee">AddEmp</a>
                             <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
                         {% else %}
                             <a class="nav-item nav-link" id="home" href="/">Home</a>
