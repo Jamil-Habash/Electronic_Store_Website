@@ -13,25 +13,10 @@ class Employee(db.Model, UserMixin):
     Email = db.Column(db.String(100), unique=True, nullable=False)
     Pass = db.Column(db.String(100), nullable=False)
     Date_Of_Birth = db.Column(db.Date)
+    Salary = db.Column(db.Float, nullable=False)
 
     def get_id(self):
         return str(self.Employee_ID)
-
-
-# Emp_Full_Time Table
-class EmpFullTime(db.Model):
-    __tablename__ = 'Emp_Full_Time'
-    Salary = db.Column(db.Float)
-    Employee_ID = db.Column(db.Integer, db.ForeignKey('Employee.Employee_ID', ondelete='CASCADE'), primary_key=True)
-    employee = db.relationship('Employee', backref=db.backref('full_time', uselist=False))
-
-
-# Emp_Part_Time Table
-class EmpPartTime(db.Model):
-    __tablename__ = 'Emp_Part_Time'
-    Hourly_Wage = db.Column(db.Float)
-    Employee_ID = db.Column(db.Integer, db.ForeignKey('Employee.Employee_ID', ondelete='CASCADE'), primary_key=True)
-    employee = db.relationship('Employee', backref=db.backref('part_time', uselist=False))
 
 
 # Company Table
