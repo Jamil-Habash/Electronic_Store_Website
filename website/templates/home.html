@@ -1,23 +1,120 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
-<div class="container mt-4">
-    <h1 class="text-center mb-4" style="color: white;">Home</h1>
-    <hr class="border border-2 border-white opacity-75">
-    {% if user.Email == "manager@outlook.com" %}
-        <div class="card shadow">
-            <div class="card-header bg-dark text-white">
-                <h2 class="mb-0">Employee Modification</h2>
+
+<!-- Hero Video Section (Full screen background) -->
+<section id="hero" class="position-relative w-100" style="height: 100vh; overflow: hidden;">
+    <video autoplay muted loop playsinline class="position-absolute w-100 h-100" style="object-fit: cover; z-index: 1;">
+        <source src="{{ url_for('static', filename='about_video.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0, 0, 0, 0.6); z-index: 2;"></div>
+    <div class="position-relative d-flex flex-column justify-content-center align-items-center text-white text-center h-100 w-100" style="z-index: 3;">
+        <h1 class="display-4 fw-bold">Welcome to Voyager</h1>
+        <p class="lead">Your one-stop shop for the latest electronic gadgets and accessories!</p>
+        <a href="#features" class="btn btn-primary btn-lg mt-4">Explore Now</a>
+    </div>
+</section>
+
+<!-- About Us Section -->
+<section id="about" class="position-relative w-100" style="height: 500px; background-color: #111; overflow: hidden;">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0, 0, 0, 0.6); z-index: 2;"></div>
+    <div class="position-relative text-white text-center d-flex flex-column justify-content-center align-items-center h-100 w-100" style="z-index: 3;">
+        <h2 style="color: #d2b48c;">About Us</h2>
+        <p class="lead w-75 mx-auto">Voyager is your go-to destination for cutting-edge electronic devices,
+            specializing in high-quality laptops for every need. From sleek ultrabooks to powerful gaming machines,
+            we offer the latest models from top brands—delivered with trusted warranties, great prices, and expert support.</p>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5 text-center w-100" style="background-color: #1a1a1a; color: #f5f5f5;">
+    <div class="container-fluid">
+        <h2 class="mb-4" style="color: #d2b48c;">Why Choose Us</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <i class="fa fa-truck fa-3x mb-3" style="color: #d2b48c;"></i>
+                <h5>Fast Delivery</h5>
+                <p>Get your orders delivered swiftly and securely.</p>
             </div>
-            <div class="card-body bg-secondary text-white ">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0"> Manage Employee</h4>
-                    <a href="/empManager" class="btn btn-dark btn-lg">
-                        <i class="bi bi-plus-circle"></i> Manage
-                    </a>
-                </div>
+            <div class="col-md-4">
+                <i class="fa fa-shield fa-3x mb-3" style="color: #d2b48c;"></i>
+                <h5>Secure Warranty</h5>
+                <p>Enjoy peace of mind with our warranty on all products.</p>
+            </div>
+            <div class="col-md-4">
+                <i class="fa fa-star fa-3x mb-3" style="color: #d2b48c;"></i>
+                <h5>Top Rated</h5>
+                <p>Thousands of satisfied customers and 5-star reviews.</p>
             </div>
         </div>
-    {% endif %}
-</div>
+    </div>
+</section>
+
+<!-- Best Sellers Section -->
+<section id="best-sellers" class="py-5 w-100" style="background-color: #000;">
+    <div class="container">
+        <h2 class="mb-4 text-white text-center">Best Selling Products</h2>
+        <div id="bestSellersCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
+            <div class="carousel-inner">
+                {% for product in best_selling_products %}
+                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 text-center">
+                            <img src="{{ url_for('views.product_image', product_id=product.Product_ID) }}"
+                                 alt="Product Image" class="img-fluid" style="max-height: 500px;">
+                        </div>
+                        <div class="col-md-6 text-white">
+                            <h2 class="mb-3">{{ product.model.Model_Name }}</h2>
+                            <p>{{ product.Descriptions }}</p>
+                            <h4 style="color: #d2b48c;">${{ product.Price }}</h4>
+                            <a href="/product/{{ product.Product_ID }}" class="btn btn-primary mt-3">Buy</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <a class="carousel-control-prev" href="#bestSellersCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </a>
+            <a class="carousel-control-next" href="#bestSellersCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- New Arrivals Section -->
+<section id="new-arrivals" class="py-5 w-100" style="background-color: #000;">
+    <div class="container">
+        <h2 class="mb-4 text-white text-center">Latest Arrivals</h2>
+        <div id="newArrivalsCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
+            <div class="carousel-inner">
+                {% for product in new_products %}
+                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 text-center">
+                            <img src="{{ url_for('views.product_image', product_id=product.Product_ID) }}"
+                                 alt="Product Image" class="img-fluid" style="max-height: 500px;">
+                        </div>
+                        <div class="col-md-6 text-white">
+                            <h2 class="mb-3">{{ product.model.Model_Name }}</h2>
+                            <p>{{ product.Descriptions }}</p>
+                            <h4 style="color: #d2b48c;">${{ product.Price }}</h4>
+                            <a href="/product/{{ product.Product_ID }}" class="btn btn-primary mt-3">Buy</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <a class="carousel-control-prev" href="#newArrivalsCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </a>
+            <a class="carousel-control-next" href="#newArrivalsCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </a>
+        </div>
+    </div>
+</section>
+
 {% endblock %}

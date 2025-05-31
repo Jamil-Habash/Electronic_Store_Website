@@ -14,7 +14,6 @@ def employee_manager():
 @employee.route('/add_employee', methods=['GET', 'POST'])
 def addEmp():
     if request.method == "POST":
-        ssn = request.form.get('SSN')
         empName = request.form.get('empName')
         empPhone = request.form.get('empPhoneNumber')
         empAddress = request.form.get('empAddress')
@@ -22,9 +21,7 @@ def addEmp():
         empEmail = request.form.get('empEmail')
         empPass = request.form.get('empPass')
         empSalary = request.form.get('empSalary')
-        if len(ssn) != 9:
-            flash('Incorrect SSN', 'error')
-        elif len(empName) < 3:
+        if len(empName) < 3:
             flash('Incorrect Name', 'error')
         elif len(empPhone) != 10:
             flash('Incorrect Phone Number', 'error')
@@ -35,7 +32,7 @@ def addEmp():
         elif len(empPass) < 3:
             flash('Incorrect Password', 'error')
         else:
-            newEmp = Employee(SSN=ssn, Emp_Name=empName, Phone_Number=empPhone, Address=empAddress, Email=empEmail,
+            newEmp = Employee(Emp_Name=empName, Phone_Number=empPhone, Address=empAddress, Email=empEmail,
                               Pass=empPass, Date_Of_Birth=empDateOfBirth, Salary=empSalary)
             db.session.add(newEmp)
             db.session.commit()
@@ -48,7 +45,6 @@ def addEmp():
 def updateEmp():
     if request.method == "POST":
         empID = request.form.get('employeeId')
-        empSSN = request.form.get('empSSN')
         empName = request.form.get('empName')
         empPhone = request.form.get('empPhoneNumber')
         empAddress = request.form.get('empAddress')
@@ -56,9 +52,7 @@ def updateEmp():
         empEmail = request.form.get('empEmail')
         empPass = request.form.get('empPass')
         empSalary = request.form.get('empSalary')
-        if len(empSSN) != 9:
-            flash('Incorrect SSN', 'error')
-        elif len(empName) < 3:
+        if len(empName) < 3:
             flash('Incorrect Name', 'error')
         elif len(empPhone) != 10:
             flash('Incorrect Phone Number', 'error')
@@ -70,7 +64,6 @@ def updateEmp():
             flash('Incorrect Password', 'error')
         else:
             employee = Employee.query.filter_by(Employee_ID=empID).first()
-            employee.SSN = empSSN
             employee.Emp_Name = empName
             employee.Phone_Number = empPhone
             employee.Address = empAddress

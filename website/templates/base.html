@@ -16,11 +16,12 @@
         />
         <style>
             body {
-                background-image: url('{{ url_for("static", filename="pic.jpg") }}');
+                background-image: url('{{ url_for("static", filename="black.jpg") }}');
                 background-size: cover;
                 background-position: center;
                 background-attachment: fixed;
             }
+
         </style>
         <title>{% block title %}Home{% endblock %}</title>
     </head>
@@ -31,17 +32,14 @@
              </button>
             <div class="collapse navbar-collapse" id="navbar">
                 <div class="navbar-nav">
-                    {% if user.is_authenticated%}
-                        {% if user.Email == "manager@outlook.com" %}
-                            <a class="nav-item nav-link" id="home" href="/">Home</a>
-                            <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
-                        {% else %}
-                            <a class="nav-item nav-link" id="home" href="/">Home</a>
-                            <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
-                        {% endif %}
+                     {% if user.is_authenticated%}
+                        <a class="nav-item nav-link" id="home" href="/">Home</a>
+                        <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
                     {% else %}
+                        <a class="nav-item nav-link" id="home" href="/">Home</a>
                         <a class="nav-item nav-link" id="login" href="/login">Login</a>
-                    {% endif %}
+                        <a class="nav-item nav-link" id="signUp" href="/signUp">SignUp</a>
+                     {% endif %}
                 </div>
             </div>
         </nav>
@@ -65,7 +63,7 @@
                     </div>
         {% endif %} {% endfor %} {% endif %} {% endwith %}
 
-        <div class = "container">
+       <div class="container-fluid px-0">
             {% block content %} {% endblock %}
         </div>
 
