@@ -1,12 +1,11 @@
 from . import db
 from flask_login import UserMixin
-
+from sqlalchemy.dialects.mysql import LONGBLOB
 
 # Employee Table
 class Employee(db.Model, UserMixin):
     __tablename__ = 'Employee'
     Employee_ID = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
-    SSN = db.Column(db.String(32), unique=True, nullable=False)
     Emp_Name = db.Column(db.String(32))
     Phone_Number = db.Column(db.String(32))
     Address = db.Column(db.String(100))
@@ -55,6 +54,8 @@ class Product(db.Model):
     Product_Type = db.Column(db.String(50))
     Warranty = db.Column(db.Integer)
     Model_ID = db.Column(db.Integer, db.ForeignKey('Model.Model_ID', onupdate='CASCADE'))
+    Picture = db.Column(LONGBLOB)
+    Descriptions=db.Column(db.String(1000))
     model = db.relationship('Model', backref=db.backref('products'))
 
 
@@ -65,6 +66,8 @@ class Customer(db.Model):
     Phone_Number = db.Column(db.String(15))
     Address = db.Column(db.String(100))
     Full_Name = db.Column(db.String(100))
+    Email = db.Column(db.String(100))
+    Pass = db.Column(db.String(50))
 
 
 # Orders Table
@@ -86,6 +89,7 @@ class OrderDetails(db.Model):
     Order_ID = db.Column(db.Integer, db.ForeignKey('Orders.Order_ID', ondelete='CASCADE'), primary_key=True)
     Product_ID = db.Column(db.Integer, db.ForeignKey('Product.Product_ID', ondelete='CASCADE'), primary_key=True)
     Discount = db.Column(db.DECIMAL(5, 2))
+    quantity = db.Column(db.Integer)
     order = db.relationship('Orders', backref=db.backref('order_details'))
     product = db.relationship('Product', backref=db.backref('order_details', uselist=False))
 

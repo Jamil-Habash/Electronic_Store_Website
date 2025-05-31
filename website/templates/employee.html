@@ -20,7 +20,6 @@
     <table class="table table-hover" id="employeeTable" style="color: white;">
         <thead>
             <tr>
-                <th>SSN</th>
                 <th>Employee_ID</th>
                 <th>Name</th>
                 <th>Phone Number</th>
@@ -35,7 +34,6 @@
             {% for employee in employees%}
             <tr data-toggle="modal" data-target="#updateEmployeeModal"
                 data-id="{{ employee.Employee_ID }}"
-                data-ssn="{{ employee.SSN }}"
                 data-name="{{ employee.Emp_Name }}"
                 data-phone="{{ employee.Phone_Number }}"
                 data-address="{{ employee.Address }}"
@@ -43,7 +41,6 @@
                 data-email="{{ employee.Email }}"
                 data-pass="{{ employee.Pass }}"
                 data-salary="{{ employee.Salary }}">
-                <td>{{ employee.SSN }}</td>
                 <td>{{ employee.Employee_ID }}</td>
                 <td>{{ employee.Emp_Name }}</td>
                 <td>{{ employee.Phone_Number }}</td>
@@ -73,10 +70,6 @@
 
             <div class="modal-body">
                 <form method="POST" action="/add_employee">
-                    <div class="form-group">
-                        <label for="SSN">SSN</label>
-                        <input type="text" class="form-control" id="SSN" name="SSN" placeholder="Enter Employee SSN" />
-                    </div>
                     <div class="form-group">
                         <label for="empName">Full Name</label>
                         <input type="text" class="form-control" id="empName" name="empName" placeholder="Enter Employee Full Name" />
@@ -128,11 +121,6 @@
             <div class="modal-body">
                 <form method="POST" action="/update_employee">
                     <input type="hidden" id="updateEmployeeId" name="employeeId" />
-
-                    <div class="form-group">
-                        <label>SSN</label>
-                        <input type="text" class="form-control" id="updateSSN" name="empSSN" required>
-                    </div>
                     <div class="form-group">
                         <label>Name</label>
                         <input type="text" class="form-control" id="updateName" name="empName" required>
@@ -201,7 +189,6 @@ document.addEventListener("DOMContentLoaded", function() {
     rows.forEach(row => {
         row.addEventListener("click", function() {
             document.getElementById("updateEmployeeId").value = this.getAttribute("data-id");
-            document.getElementById("updateSSN").value = this.getAttribute("data-ssn");
             document.getElementById("updateName").value = this.getAttribute("data-name");
             document.getElementById("updatePhone").value = this.getAttribute("data-phone");
             document.getElementById("updateAddress").value = this.getAttribute("data-address");
