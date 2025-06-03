@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from .models import Employee,Customer
+from .models import Employee,Customer,CustomerContact,EmployeeContact
 from flask_login import login_user, logout_user, login_required, current_user
 from . import db
 auth = Blueprint('auth', __name__)
@@ -41,14 +41,39 @@ def signUp():
             flash('Address must be at least 10 characters.', 'error')
         elif len(email) < 10:
             flash('Email must be at least 10 characters.', 'error')
-        elif email.lower().startswith('emp'):
-            flash('Email cannot start with "emp".', 'error')
         else:
-            newCustomer = Customer(Full_Name=full_name,Address=address,Phone_Number=phone,Email=email,Pass=password)
-            db.session.add( newCustomer)
-            db.session.commit()
-            flash('Successfully Registered', 'success')
-            return redirect(url_for('views.home'),user=current_user)
+            email_exists = (
+                    CustomerContact.query.filter_by(Email=email).first() or
+                    EmployeeContact.query.filter_by(Email=email).first()
+            )
+            phone_exists = (
+                    CustomerContact.query.filter_by(Phone_Number=phone).first() or
+                    EmployeeContact.query.filter_by(Phone_Number=phone).first()
+            )
+
+            if email_exists:
+                flash('Email is already in use by another customer or employee.', 'error')
+            elif phone_exists:
+                flash('Phone number is already in use by another customer or employee.', 'error')
+            else:
+                # Step 1: Create Customer (only Full_Name)
+                newCustomer = Customer(Full_Name=full_name)
+                db.session.add(newCustomer)
+                db.session.commit()
+
+                # Step 2: Use generated Customer_ID to create CustomerContact
+                customer_contact = CustomerContact(
+                    Customer_ID=newCustomer.Customer_ID,
+                    Email=email,
+                    Phone_Number=phone,
+                    Address=address,
+                    Pass=password
+                )
+                db.session.add(customer_contact)
+                db.session.commit()
+
+                flash('Successfully Registered', 'success')
+                return redirect(url_for('views.home', user=current_user))
     return render_template("signUp.html",user=current_user)
 
 

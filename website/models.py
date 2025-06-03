@@ -7,15 +7,32 @@ class Employee(db.Model, UserMixin):
     __tablename__ = 'Employee'
     Employee_ID = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     Emp_Name = db.Column(db.String(32))
-    Phone_Number = db.Column(db.String(32))
-    Address = db.Column(db.String(100))
-    Email = db.Column(db.String(100), unique=True, nullable=False)
-    Pass = db.Column(db.String(100), nullable=False)
     Date_Of_Birth = db.Column(db.Date)
+    Pass = db.Column(db.String(100), nullable=False)
     Salary = db.Column(db.Float, nullable=False)
-
     def get_id(self):
         return str(self.Employee_ID)
+class EmployeeContact(db.Model):
+    __tablename__ = 'Employee_Contact'
+    Employee_ID = db.Column(db.Integer, db.ForeignKey('Employee.Employee_ID',ondelete='CASCADE'), primary_key=True)
+    Email = db.Column(db.String(100), unique=True, nullable=False)
+    Phone_Number = db.Column(db.String(32), unique=True)
+    Address = db.Column(db.String(100))
+    Employee = db.relationship('Employee', backref=db.backref('EmployeeContact'),uselist=False)
+
+class Customer(db.Model, UserMixin):
+    __tablename__ = 'Customer'
+    Customer_ID = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    Full_Name = db.Column(db.String(100))
+
+class CustomerContact(db.Model):
+    __tablename__ = 'Customer_Contact'
+    Customer_ID = db.Column(db.Integer, db.ForeignKey('Customer.Customer_ID',ondelete='CASCADE'), primary_key=True)
+    Email = db.Column(db.String(50), unique=True)
+    Phone_Number = db.Column(db.String(15), unique=True)
+    Address = db.Column(db.String(100))
+    Pass = db.Column(db.String(50))
+    Customer = db.relationship('Customer', backref=db.backref('CustomerContact'), uselist=False)
 
 
 # Company Table
@@ -40,8 +57,7 @@ class Model(db.Model):
 # Inventory_Record Table
 class InventoryRecord(db.Model):
     __tablename__ = 'Inventory_Record'
-    Record_ID = db.Column(db.Integer)
-    Model_ID = db.Column(db.Integer, db.ForeignKey('Model.Model_ID', onupdate='CASCADE'), primary_key=True)
+    Model_ID = db.Column(db.Integer, db.ForeignKey('Model.Model_ID', onupdate='CASCADE',ondelete='CASCADE'), primary_key=True)
     Quantity = db.Column(db.Integer)
     model = db.relationship('Model', backref=db.backref('inventory_records', uselist=False))
 
@@ -57,18 +73,6 @@ class Product(db.Model):
     Picture = db.Column(LONGBLOB)
     Descriptions=db.Column(db.String(1000))
     model = db.relationship('Model', backref=db.backref('products'))
-
-
-# Customer Table
-class Customer(db.Model):
-    __tablename__ = 'Customer'
-    Customer_ID = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
-    Phone_Number = db.Column(db.String(15))
-    Address = db.Column(db.String(100))
-    Full_Name = db.Column(db.String(100))
-    Email = db.Column(db.String(100))
-    Pass = db.Column(db.String(50))
-
 
 # Orders Table
 class Orders(db.Model):

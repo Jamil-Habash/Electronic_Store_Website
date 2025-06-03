@@ -68,6 +68,7 @@
                             <h2 class="mb-3">{{ product.model.Model_Name }}</h2>
                             <p>{{ product.Descriptions }}</p>
                             <h4 style="color: #d2b48c;">${{ product.Price }}</h4>
+                            <p><strong>Available:</strong> {{ product.model.inventory_records.Quantity if product.model.inventory_records else 'N/A' }}</p>
                             <a href="/product/{{ product.Product_ID }}" class="btn btn-primary mt-3">Buy</a>
                         </div>
                     </div>
@@ -97,10 +98,11 @@
                             <img src="{{ url_for('views.product_image', product_id=product.Product_ID) }}"
                                  alt="Product Image" class="img-fluid" style="max-height: 500px;">
                         </div>
-                        <div class="col-md-6 text-white">
+                       <div class="col-md-6 text-white">
                             <h2 class="mb-3">{{ product.model.Model_Name }}</h2>
                             <p>{{ product.Descriptions }}</p>
                             <h4 style="color: #d2b48c;">${{ product.Price }}</h4>
+                            <p><strong>Available:</strong> {{ product.model.inventory_records.Quantity if product.model.inventory_records else 'N/A' }}</p>
                             <a href="/product/{{ product.Product_ID }}" class="btn btn-primary mt-3">Buy</a>
                         </div>
                     </div>
