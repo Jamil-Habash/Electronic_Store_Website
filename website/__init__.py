@@ -8,7 +8,7 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = '1234Abd'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:AbdallahK123@localhost/electronic_store'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root123@localhost/electronic_store'
     db.init_app(app)
 
     from .views import views
@@ -18,7 +18,7 @@ def create_app():
     app.register_blueprint(auth, url_prefix='/')
     app.register_blueprint(employee, url_prefix='/')
 
-    from .models import Employee
+    from .models import Employee,Customer
 
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
@@ -27,5 +27,9 @@ def create_app():
     @login_manager.user_loader
     def load_user(Employee_ID):
         return Employee.query.get(int(Employee_ID))
+
+    @login_manager.user_loader
+    def load_user(Customer_ID):
+        return Customer.query.get(int(Customer_ID))
 
     return app

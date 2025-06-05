@@ -10,8 +10,6 @@ class Employee(db.Model, UserMixin):
     Date_Of_Birth = db.Column(db.Date)
     Pass = db.Column(db.String(100), nullable=False)
     Salary = db.Column(db.Float, nullable=False)
-    def get_id(self):
-        return str(self.Employee_ID)
 class EmployeeContact(db.Model):
     __tablename__ = 'Employee_Contact'
     Employee_ID = db.Column(db.Integer, db.ForeignKey('Employee.Employee_ID',ondelete='CASCADE'), primary_key=True)
@@ -19,13 +17,15 @@ class EmployeeContact(db.Model):
     Phone_Number = db.Column(db.String(32), unique=True)
     Address = db.Column(db.String(100))
     Employee = db.relationship('Employee', backref=db.backref('EmployeeContact'),uselist=False)
+    def get_id(self):
+        return str(self.Employee_ID)
 
 class Customer(db.Model, UserMixin):
     __tablename__ = 'Customer'
     Customer_ID = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     Full_Name = db.Column(db.String(100))
 
-class CustomerContact(db.Model):
+class CustomerContact(db.Model,UserMixin):
     __tablename__ = 'Customer_Contact'
     Customer_ID = db.Column(db.Integer, db.ForeignKey('Customer.Customer_ID',ondelete='CASCADE'), primary_key=True)
     Email = db.Column(db.String(50), unique=True)
@@ -33,6 +33,9 @@ class CustomerContact(db.Model):
     Address = db.Column(db.String(100))
     Pass = db.Column(db.String(50))
     Customer = db.relationship('Customer', backref=db.backref('CustomerContact'), uselist=False)
+    def get_id(self):
+        return str(self.Customer_ID)
+
 
 
 # Company Table

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, session
 from .models import Employee,Customer,CustomerContact,EmployeeContact
 from flask_login import login_user, logout_user, login_required, current_user
 from . import db
@@ -10,11 +10,19 @@ def login():
     if request.method == "POST":
         email = request.form.get('email')
         password = request.form.get('password')
-        user = Employee.query.filter_by(Email=email).first()
-        if user:
-            if user.Pass == password:
+        employee =EmployeeContact.query.filter_by(Email=email).first()
+        customer =CustomerContact.query.filter_by(Email=email).first()
+        if  employee:
+            if  employee.Pass == password:
                 flash('Logged in successfully', 'success')
-                login_user(user, remember=True)
+                login_user( employee, remember=True)
+                return redirect(url_for('views.home'))
+            else:
+                flash('Incorrect password', 'error')
+        elif customer:
+            if customer.Pass == password:
+                flash('Logged in successfully', 'success')
+                login_user( customer, remember=True)
                 return redirect(url_for('views.home'))
             else:
                 flash('Incorrect password', 'error')
@@ -82,4 +90,5 @@ def signUp():
 @login_required
 def log_out():
     logout_user()
-    return redirect(url_for('auth.login'))
+    session.pop('cart', None)
+    return redirect(url_for('views.home'))
