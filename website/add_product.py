@@ -4,7 +4,7 @@ import os
 
 app = create_app()
 
-# Product data: (Price, Product_Type, Warranty, Model_ID, Image File Name, Description)
+# Product data: (Price, Product_Type, Warranty, Product_ID, Image File Name, Description)
 products_info = [
     (699.99, 'Laptop', 12, 1, "Inspiron 15.jpg",
      "Dell Inspiron 15 is a dependable all-rounder designed for daily productivity. Equipped with an Intel Core i5, 8GB RAM, "
@@ -42,7 +42,7 @@ products_info = [
 ]
 
 with app.app_context():
-    for price, product_type, warranty, model_id, image_name, description in products_info:
+    for price, product_type, warranty, product_id, image_name, description in products_info:
         image_path = os.path.join("website", "static", image_name)
 
         try:
@@ -53,7 +53,7 @@ with app.app_context():
                 Price=price,
                 Product_Type=product_type,
                 Warranty=warranty,
-                Model_ID=model_id,
+                Product_ID=product_id,
                 Picture=image_data,
                 Descriptions=description
             )

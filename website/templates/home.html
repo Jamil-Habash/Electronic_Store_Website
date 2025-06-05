@@ -1,7 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
+<style>
+.carousel-item {
+    min-height: 350px;
+}
 
+.product-description {
+    min-height: 150px;
+}
+</style>
 <!-- Hero Video Section (Full screen background) -->
 <section id="hero" class="position-relative w-100" style="height: 100vh; overflow: hidden;">
     <video autoplay muted loop playsinline class="position-absolute w-100 h-100" style="object-fit: cover; z-index: 1;">
@@ -60,10 +68,12 @@
                 {% for product in best_selling_products %}
                 <div class="carousel-item {% if loop.first %}active{% endif %}">
                     <div class="row align-items-center">
-                        <div class="col-md-6 text-center">
+                     <div class="col-md-6 text-center">
+                        <div class="product-image-container mx-auto" style="width: 400px; height: 300px; overflow: hidden;">
                             <img src="{{ url_for('views.product_image', product_id=product.Product_ID) }}"
-                                 alt="Product Image" class="img-fluid" style="max-height: 500px;">
+                                 alt="Product Image" class="img-fluid w-100 h-100" style="object-fit: cover;">
                         </div>
+                    </div>
                         <div class="col-md-6 text-white">
                             <h2 class="mb-3">{{ product.model.Model_Name }}</h2>
                             <p>{{ product.Descriptions }}</p>
@@ -95,8 +105,10 @@
                 <div class="carousel-item {% if loop.first %}active{% endif %}">
                     <div class="row align-items-center">
                         <div class="col-md-6 text-center">
-                            <img src="{{ url_for('views.product_image', product_id=product.Product_ID) }}"
-                                 alt="Product Image" class="img-fluid" style="max-height: 500px;">
+                            <div class="product-image-container mx-auto" style="width: 400px; height: 300px; overflow: hidden;">
+                                <img src="{{ url_for('views.product_image', product_id=product.Product_ID) }}"
+                                     alt="Product Image" class="img-fluid w-100 h-100" style="object-fit: cover;">
+                            </div>
                         </div>
                        <div class="col-md-6 text-white">
                             <h2 class="mb-3">{{ product.model.Model_Name }}</h2>
