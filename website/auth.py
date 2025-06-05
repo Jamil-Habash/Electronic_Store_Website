@@ -77,4 +77,5 @@ def signUp():
 @login_required
 def log_out():
     logout_user()
+    session.pop('cart', None)
     return redirect(url_for('views.home'))
