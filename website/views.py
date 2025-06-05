@@ -1,11 +1,9 @@
-from flask import Blueprint, render_template
-from flask import send_file
+from flask import Blueprint, render_template,send_file,request,flash, redirect, url_for,session
+from flask_login import login_required, current_user
 import io
-from .models import Product,OrderDetails,Model
+from .models import Product,OrderDetails,Model,Customer
 from . import db
 from sqlalchemy import func,or_
-from flask_login import current_user
-from flask import request, flash,redirect, url_for, session
 
 views = Blueprint('views', __name__)
 
@@ -30,7 +28,6 @@ def home():
         .all()
     )
     return render_template("home.html", best_selling_products=best_selling, new_products=new_products,user=current_user)
-
 @views.route('/products')
 def products():
     search_query = request.args.get('search', '')
@@ -84,7 +81,21 @@ def remove_from_cart():
     else:
         flash("Item not found in cart", "error")
     return redirect(url_for('views.cart'))
+@views.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    customer = Customer.query.get(current_user.Customer_ID)
+    if request.method == 'POST':
+        customer.Full_Name = request.form['Full_Name']
+        customer.Email = request.form['Email']
+        customer.Phone_Number = request.form['Phone_Number']
+        customer.Address = request.form['Address']
+        customer.Pass = request.form['Pass']
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('views.profile'))
 
+    return render_template("profile.html", customer=customer,user=current_user)
 @views.route('/product/image/<int:product_id>')
 def product_image(product_id):
     product = Product.query.get_or_404(product_id)
