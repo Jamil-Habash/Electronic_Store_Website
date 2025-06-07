@@ -20,7 +20,9 @@ def dashboard():
         .join(OrderDetails, OrderDetails.Product_ID == Product.Product_ID)
         .join(Model, Product.Product_ID == Model.Model_ID)
         .group_by(Product.Product_ID)
+        .join(Orders, Orders.Order_ID==OrderDetails.Order_ID )
         .order_by(desc('total_sold'))
+        .filter(Orders.Employee_ID.isnot(None))
         .all()
     )
 
@@ -36,12 +38,12 @@ def dashboard():
         .join(OrderDetails, OrderDetails.Order_ID == Orders.Order_ID)
         .group_by(Employee.Employee_ID)
         .order_by(desc('items_sold'))
-        .filter(Employee.Emp_Name != "abdallah kokash")
+        .filter(Employee.Emp_Name != "abdallah kokash" and Orders.Employee_ID.isnot(None))
         .all()
     )
 
     # 3. Total Revenue
-    total_revenue = db.session.query(func.sum(Orders.Total_Price)).scalar()
+    total_revenue = db.session.query(func.sum(Orders.Total_Price)).filter(Orders.Employee_ID.isnot(None)).scalar()
 
     # 4. Total Employees
     total_employees = db.session.query(func.count(Employee.Employee_ID)).scalar()
@@ -61,6 +63,7 @@ def dashboard():
         .join(Orders, Orders.Customer_ID == Customer.Customer_ID)
         .group_by(Customer.Customer_ID)
         .order_by(desc("total_spent"))
+        .filter(Orders.Employee_ID.isnot(None))
         .limit(5)
         .all()
     )
@@ -94,7 +97,9 @@ def dashboard():
         )
         .join(OrderDetails, OrderDetails.Product_ID == Product.Product_ID)
         .join(Model, Product.Product_ID == Model.Model_ID)
+        .join(Orders, Orders.Order_ID == OrderDetails.Order_ID)
         .group_by(Product.Product_ID)
+        .filter(Orders.Employee_ID.isnot(None))
         .all()
     )
     return render_template("dashboard.html",
