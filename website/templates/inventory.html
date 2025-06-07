@@ -1,0 +1,152 @@
+{% extends "baseControl.html" %}
+{% block title %}Inventory{% endblock %}
+{% block content %}
+
+    <style>
+        :root {
+            --bg-dark: #121218;
+            --bg-elevated: #1b1b26;
+            --text-main: #f1f1f1;
+            --text-muted: #a1a1aa;
+            --accent: #6ee7b7; /* minty green */
+        }
+
+        .modern-table-container {
+            background-color: var(--bg-dark);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modern-table {
+            border-collapse: collapse;
+            width: 100%;
+            color: var(--text-main);
+            background-color: var(--bg-elevated);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .modern-table th {
+            background-color: #2c2c3a;
+            color: var(--accent);
+            font-weight: 600;
+            padding: 1rem;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        .modern-table td {
+            padding: 1rem;
+            border-top: 1px solid #2f2f3d;
+            color: var(--text-main);
+        }
+
+        .modern-table tbody tr {
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .modern-table tbody tr:hover {
+            background-color: #242432;
+        }
+
+        .modal-content {
+            background-color: var(--bg-elevated);
+            border: 1px solid #3c3c5a;
+            color: var(--text-main);
+            border-radius: 1rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-header, .modal-footer {
+            border: none;
+        }
+
+        .btn-outline-light {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-outline-light:hover {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+        }
+    </style>
+
+    <div class="container mt-5">
+        <h2 class="mb-4 text-white fw-bold">📦 Product Inventory</h2>
+        <form class="form-inline mb-4 p-4 rounded" method="GET" action="/inventory"
+              style="background-color: var(--bg-elevated); box-shadow: 0 8px 24px rgba(0,0,0,0.4); border-radius: 1rem;">
+            <div class="form-group mr-3 mb-2">
+                <label for="field" class="form-label text-white mr-2">🔍 Search by:</label>
+                <select class="form-control" id="field" name="field" required
+                        style="background-color: #2c2c3a; color: var(--text-main); border: none;">
+                    <option value="">-- Select Field --</option>
+                    <option value="Model_Name">Model Name</option>
+                    <option value="Product_Type">Product Type</option>
+                </select>
+            </div>
+
+            <div class="form-group mr-3 mb-2">
+                <input type="text" class="form-control" name="value" placeholder="Enter search value..." required
+                       style="background-color: #2c2c3a; color: var(--text-main); border: none;">
+            </div>
+
+            <button type="submit" class="btn btn-outline-light mb-2 mr-2">Search</button>
+            <a href="/inventory" class="btn btn-outline-secondary mb-2">Reset</a>
+        </form>
+        <div class="modern-table-container">
+            <table class="modern-table">
+                <thead>
+                <tr>
+                    <th>Model</th>
+                    <th>Type</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Warranty</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for product, model_name, quantity in products %}
+                    <tr data-bs-toggle="modal" data-bs-target="#productModal{{ product.Product_ID }}">
+                        <td>{{ model_name }}</td>
+                        <td class="text-muted">{{ product.Product_Type }}</td>
+                        <td>${{ '%.2f' | format(product.Price) }}</td>
+                        <td>{{ quantity }}</td>
+                        <td>{{ product.Warranty }} mo</td>
+                    </tr>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="productModal{{ product.Product_ID }}" tabindex="-1"
+                         aria-labelledby="productModalLabel{{ product.Product_ID }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-accent"
+                                        id="productModalLabel{{ product.Product_ID }}">{{ model_name }} Details</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p><strong>Type:</strong> {{ product.Product_Type }}</p>
+                                    <p><strong>Description:</strong> {{ product.Descriptions }}</p>
+                                    <p><strong>Price:</strong> ${{ product.Price }}</p>
+                                    <p><strong>Warranty:</strong> {{ product.Warranty }} months</p>
+                                    <p><strong>Quantity in Stock:</strong> {{ quantity }}</p>
+                                    <p><strong>Model ID:</strong> {{ product.Product_ID }}</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
