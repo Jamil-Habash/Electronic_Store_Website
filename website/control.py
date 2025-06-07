@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template,flash,request
+from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import login_required, current_user
 from .models import db, Employee, Product, Orders, OrderDetails, Customer, Model, InventoryRecord,Purchase
 from sqlalchemy import func, desc,cast, String
@@ -140,6 +140,7 @@ def dashboard():
                            low_stock_items=low_stock_items,
                            product_sales_data=product_sales_data)
 
+
 @control.route('/empManager')
 @login_required
 def employee_manager():
@@ -155,11 +156,11 @@ def employee_manager():
         "Phone_Number": Employee.Phone_Number,
         "Address": Employee.Address
     }
-
-    if search_field and search_value:
+     if search_field and search_value:
         column = filters.get(search_field)
 
         if column.type.python_type.__name__ == 'date':
+
             employees = Employee.query.filter(column == search_value).all()
         else:
             employees = Employee.query.filter(cast(column, String).ilike(f"%{search_value}%")).all()
@@ -168,7 +169,6 @@ def employee_manager():
     if not employees:
         flash('No Employee Found', 'error')
     return render_template("employee.html", user=current_user, employees=employees)
-
 
 @control.route('/add_employee', methods=['GET', 'POST'])
 def addEmp():
@@ -249,3 +249,52 @@ def deleteEmp():
             flash('Successfully Deleted', 'success')
     employees = Employee.query.all()
     return render_template("employee.html", user=current_user, employees=employees)
+@control.route('/orders')
+@login_required
+def orders():
+    search_field = request.args.get('field')
+    search_value = request.args.get('value')
+    filters = {
+        "Order_ID": Orders.Order_ID,
+        "Customer_ID": Orders.Customer_ID,
+        "Employee_ID": Orders.Employee_ID,
+        "Total_Price": Orders.Total_Price,
+        "Date_Of_Order": Orders.Date_Of_Order,
+    }
+     if search_field and search_value:
+        column = filters.get(search_field)
+        if column.type.python_type.__name__ == 'date':
+            orders = Orders.query.filter(Orders.Employee_ID.isnot(None),column == search_value).all()
+        else:
+            orders = Orders.query.filter(Orders.Employee_ID.isnot(None),cast(column, String).ilike(f"%{search_value}%")).all()
+    else:
+        orders = Orders.query.filter(Orders.Employee_ID.isnot(None)).order_by(Orders.Order_ID).all()
+    pending_orders = Orders.query.filter(Orders.Employee_ID.is_(None)).all()
+    return render_template('orders.html', orders=orders, pending_orders=pending_orders, user=current_user)
+
+@control.route('/orders/approve/<int:order_id>', methods=['POST'])
+@login_required
+def approve_order(order_id):
+    order = Orders.query.get(order_id)
+    if not order:
+        flash('Order not found.', 'warning')
+        return redirect(url_for('control.orders'))
+
+    order.Employee_ID = Employee.Employee_ID
+    # Update stock quantities
+    for detail in order.order_details:
+        # detail.Product_ID -> get product
+        product = Product.query.get(detail.Product_ID)
+        if product:
+            # Get inventory record by Model_ID
+            inventory_record = InventoryRecord.query.filter_by(Model_ID=product.Product_ID).first()
+            if inventory_record:
+                # Reduce stock by ordered quantity
+                inventory_record.Quantity -= detail.quantity
+                if inventory_record.Quantity < 0:
+                    inventory_record.Quantity = 0  # prevent negative stock
+
+    db.session.commit()
+
+    flash(f'Order #{order_id} approved and inventory updated.', 'success')
+    return redirect(url_for('control.orders'))

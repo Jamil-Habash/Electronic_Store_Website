@@ -1,0 +1,277 @@
+{% extends "baseControl.html" %}
+{% block title %}Orders{% endblock %}
+{% block content %}
+
+<style>
+    :root {
+        --bg-dark: #121218;
+        --bg-elevated: #1b1b26;
+        --text-main: #f1f1f1;
+        --text-muted: #a1a1aa;
+        --accent: #6ee7b7;
+    }
+
+    .modern-table-container {
+        background-color: var(--bg-dark);
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .modern-table {
+        border-collapse: collapse;
+        width: 100%;
+        color: var(--text-main);
+        background-color: var(--bg-elevated);
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+
+    .modern-table th {
+        background-color: #2c2c3a;
+        color: var(--accent);
+        font-weight: 600;
+        padding: 1rem;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+    }
+
+    .modern-table td {
+        padding: 1rem;
+        border-top: 1px solid #2f2f3d;
+        color: var(--text-main);
+    }
+
+    .modern-table tbody tr {
+        transition: background-color 0.2s ease;
+        cursor: pointer;
+    }
+
+    .modern-table tbody tr:hover {
+        background-color: #242432;
+    }
+
+    .modal-content {
+        background-color: var(--bg-elevated);
+        border: 1px solid #3c3c5a;
+        color: var(--text-main);
+        border-radius: 1rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-header, .modal-footer {
+        border: none;
+    }
+
+    .btn-outline-light {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .btn-outline-light:hover {
+        background-color: var(--accent);
+        color: var(--bg-dark);
+    }
+
+</style>
+
+<div class="container py-5">
+    <h2 class="text-light mb-5">📋 Orders Management</h2>
+    <!-- Search Bar -->
+<form class="form-inline mb-4 p-4 rounded" method="GET" action="/orders" style="background-color: var(--bg-elevated); box-shadow: 0 8px 24px rgba(0,0,0,0.4); border-radius: 1rem;">
+                <div class="form-group mr-3 mb-2">
+                    <label for="field" class="form-label text-white mr-2">🔍 Search by:</label>
+                    <select class="form-control" id="field" name="field" required
+                            style="background-color: #2c2c3a; color: var(--text-main); border: none;">
+                        <option value="">-- Select Field --</option>
+                        <option value="Order_ID">Order ID</option>
+                        <option value="Customer_ID">Customer ID</option>
+                        <option value="Employee_ID">Employee ID</option>
+                        <option value="Total_Price">Total Price</option>
+                        <option value="Date_Of_Order">Date Of Order</option>
+                    </select>
+                </div>
+
+                <div class="form-group mr-3 mb-2">
+                    <input type="text" class="form-control" name="value" placeholder="Enter search value..." required
+                           style="background-color: #2c2c3a; color: var(--text-main); border: none;">
+                </div>
+
+                <button type="submit" class="btn btn-outline-light mb-2 mr-2">Search</button>
+                <a href="/orders" class="btn btn-outline-secondary mb-2">Reset</a>
+    </form>
+    {% set approved_orders = orders | selectattr('Employee_ID') | list %}
+    <!-- Approved Orders Table -->
+    {% if approved_orders %}
+    <div class="modern-table-container mb-4">
+        <h5 class="text-white mb-4">All Approved Orders</h5>
+        <div class="table-responsive">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Employee</th>
+                        <th>Date</th>
+                        <th>Total Price ($)</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in approved_orders %}
+                    <tr>
+                        <td>{{ order.Order_ID }}</td>
+                        <td>{{ order.customer.Full_Name if order.customer else 'N/A' }}</td>
+                        <td>{{ order.employee.Emp_Name if order.employee else 'N/A' }}</td>
+                        <td>{{ order.Date_Of_Order.strftime('%Y-%m-%d') if order.Date_Of_Order else 'N/A' }}</td>
+                        <td>{{ "%.2f"|format(order.Total_Price or 0) }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#orderModal{{ order.Order_ID }}">View</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="card bg-secondary text-white shadow mb-4">
+        <div class="card-body text-center">
+            <h5 class="card-title">No Approved Orders Found</h5>
+            <p>There are currently no approved orders to display.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pending Orders Table -->
+    {% if pending_orders %}
+    <div class="modern-table-container mb-4">
+        <h5 class="text-white mb-4">Pending Orders</h5>
+        <div class="table-responsive">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Total Price ($)</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in pending_orders %}
+                    <tr>
+                        <td>{{ order.Order_ID }}</td>
+                        <td>{{ order.customer.Full_Name if order.customer else 'N/A' }}</td>
+                        <td>{{ order.Date_Of_Order.strftime('%Y-%m-%d') if order.Date_Of_Order else 'N/A' }}</td>
+                        <td>{{ "%.2f"|format(order.Total_Price or 0) }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#orderModal{{ order.Order_ID }}">View</button>
+                            <form action="{{ url_for('control.approve_order', order_id=order.Order_ID) }}" method="post" class="d-inline ms-1">
+                                <button type="submit" class="btn btn-sm btn-outline-success">Approve</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="card bg-secondary text-white shadow mb-4">
+        <div class="card-body text-center">
+            <h5 class="card-title">No Pending Orders</h5>
+            <p>There are currently no pending orders.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Modals-->
+    {% for order in orders %}
+    <div class="modal fade" id="orderModal{{ order.Order_ID }}" tabindex="-1" aria-labelledby="orderModalLabel{{ order.Order_ID }}" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="orderModalLabel{{ order.Order_ID }}">Order Details</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Customer:</strong> {{ order.customer.Full_Name if order.customer else 'N/A' }}</p>
+            <p><strong>Employee:</strong> {{ order.employee.Emp_Name if order.employee else 'N/A' }}</p>
+            <p><strong>Date of Order:</strong> {{ order.Date_Of_Order.strftime('%Y-%m-%d') if order.Date_Of_Order else 'N/A' }}</p>
+            <hr>
+            <table class="modern-table table-sm">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Discount (%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for detail in order.order_details %}
+                <tr>
+                  <td>{{ detail.product.model.Model_Name if detail.product else 'Unknown Product' }}</td>
+                  <td>{{ detail.quantity }}</td>
+                  <td>{{ "%.2f"|format(detail.Discount) if detail.Discount else "0.00" }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="text-center">No order details found</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <p><strong>Total Price:</strong> ${{ "%.2f"|format(order.Total_Price or 0) }}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    <!-- Modals for each pending order -->
+    {% for order in pending_orders %}
+    <div class="modal fade" id="orderModal{{ order.Order_ID }}" tabindex="-1" aria-labelledby="orderModalLabel{{ order.Order_ID }}" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="orderModalLabel{{ order.Order_ID }}">Pending Order Details</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Customer:</strong> {{ order.customer.Full_Name if order.customer else 'N/A' }}</p>
+            <p><strong>Date of Order:</strong> {{ order.Date_Of_Order.strftime('%Y-%m-%d') if order.Date_Of_Order else 'N/A' }}</p>
+            <hr>
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Discount (%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for detail in order.order_details %}
+                <tr>
+                  <td>{{ detail.product.model.Model_Name if detail.product else 'Unknown Product' }}</td>
+                  <td>{{ detail.quantity }}</td>
+                  <td>{{ "%.2f"|format(detail.Discount) if detail.Discount else "0.00" }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="text-center">No order details found</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <p class="mt-3"><strong>Total Price:</strong> ${{ "%.2f"|format(order.Total_Price or 0) }}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
