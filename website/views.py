@@ -33,9 +33,7 @@ def home():
 def products():
     search_query = request.args.get('search', '')
     if search_query:
-        products = Product.query.join(Product.model).filter(
-            Model.Model_Name.ilike(f"%{search_query}%")
-        ).all()
+        products = Product.query.join(Product.model).filter(Model.Model_Name.ilike(f"%{search_query}%")).all()
     else:
         products = Product.query.all()
     return render_template('products.html', products=products, user=current_user)
