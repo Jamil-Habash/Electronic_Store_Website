@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.model.Model_Name }}{% endblock %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+  .product-image {
+    transition: transform 0.3s ease;
+    cursor: zoom-in;
+  }
+  .product-image:hover {
+    transform: scale(1.05);
+  }
+</style>
+
+<div class="py-5" style="min-height: 100vh; background: linear-gradient(to right, #000000, #3a3a3a); font-family: 'Segoe UI', sans-serif;">
+  <div class="row shadow rounded p-4" style="background-color: rgba(255, 255, 255, 0); color: white;">
+    <!-- Image Section -->
+    <div class="col-md-6 text-center">
+        <div class="rounded p-3" style="border: 1px solid rgba(255, 255, 255, 0);">
+        <img src="{{ url_for('views.product_image', product_id=product.Product_ID) }}"
+             alt="{{ product.model.Model_Name }}"
+             class="img-fluid product-image"
+             style="max-height: 450px; object-fit: contain;">
+      </div>
+    </div>
+
+    <!-- Details Section -->
+    <div class="col-md-6">
+      <h2 class="fw-bold mb-3">{{ product.model.Model_Name }}</h2>
+      <p style="color: white;">{{ product.Descriptions }}</p>
+      <hr>
+      <h4 class="text-warning mt-auto">Price: ${{ product.Price }}</h4>
+      <p class="mt-2">
+        <strong>Warranty:</strong> {{ product.Warranty if product.Warranty else 'N/A' }} months<br>
+        <strong>In Stock:</strong>
+        {{ product.model.inventory_records.Quantity if product.model.inventory_records else 'N/A' }}<br>
+      </p>
+      {% if user.is_authenticated %}
+          <form method="POST" action="{{ url_for('views.add_to_cart', product_id=product.Product_ID) }}" class="mt-4">
+            <div class="d-flex align-items-center mb-3" style="max-width: 150px;">
+              <label for="quantity" class="form-label me-2 fw-semibold">Quantity:</label>
+              <input
+                type="number"
+                id="quantity"
+                name="quantity"
+                value="1"
+                min="1"
+                max="{{ product.model.inventory_records.Quantity if product.model.inventory_records else 10 }}"
+                class="form-control"
+                style="width: 70px;">
+            </div>
+            <button type="submit" class="btn btn-outline-light btn-lg w-100 shadow">Add to Cart</button>
+          </form>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg w-100 shadow">Login to Buy</a>
+        {% endif %}
+        <div class="mt-4 small" style="color: white;">
+          <i class="bi bi-truck"></i> Fast Delivery<br>
+          <i class="bi bi-shield-check"></i> Secure Warranty<br>
+          <i class="bi bi-arrow-counterclockwise"></i> 14-Day Return Policy
+        </div>
+    </div>
+  </div>
+  <!-- Back Button -->
+  <div class="text-center mt-4">
+  <a href="{{ url_for('views.products') }}" class="btn btn-outline-light btn-lg w-25 shadow">Continue Shopping</a>
+</div>
+</div>
+{% endblock %}
