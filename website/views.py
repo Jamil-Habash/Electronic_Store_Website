@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template,send_file,request,flash, redirect, url_for,session
+from datetime import date
+from flask import Blueprint, render_template,send_file,request,flash, redirect, url_for,session,g
 from flask_login import login_required, current_user
 import io
-from .models import Product,OrderDetails,Model,Customer
+from .models import Product,Orders,OrderDetails,Model,Customer, Payment
 from . import db
 from sqlalchemy import func,or_
 
@@ -39,26 +40,51 @@ def products():
         products = Product.query.all()
     return render_template('products.html', products=products, user=current_user)
 
+@views.route('/product/<int:product_id>')
+def product_detail(product_id):
+    product = Product.query.get_or_404(product_id)
+    return render_template('product_detail.html', product=product, user=current_user)
+
 @views.route('/add_to_cart/<int:product_id>', methods=['POST'])
 def add_to_cart(product_id):
-    if not current_user.is_authenticated:
-        flash("Please log in to add products to cart.", category='error')
-        return redirect(url_for('auth.login'))
+    quantity = int(request.form.get('quantity', 1))
+    if quantity < 1:
+        quantity = 1
 
     cart = session.get('cart', {})
-    cart[str(product_id)] = cart.get(str(product_id), 0) + 1
+    cart[str(product_id)] = cart.get(str(product_id), 0) + quantity
     session['cart'] = cart
-    flash("Product added to cart!", category='success')
+
+    flash(f"Added {quantity} of product to cart!", category='success')
     return redirect(url_for('views.products'))
+
+
+@views.before_request
+def before_request():
+    cart = session.get('cart', {})
+    g.cart_count = sum(cart.values()) if cart else 0
 
 @views.route('/cart')
 def cart():
     cart = session.get('cart', {})
     products = []
     total = 0
+    total_after_discount = 0
+    def calculate_discount(price, quantity):
+        if price < 100:
+            return 0.0
+        discount = 0.1 * (quantity - 1)
+        if discount > 0.5:
+            discount = 0.5
+        if quantity < 1:
+            discount = 0.0
+        return discount
     for product_id, quantity in cart.items():
         product = Product.query.get(product_id)
         if product:
+            discount = calculate_discount(product.Price, quantity)
+            discounted_price = product.Price * quantity * (1 - discount)
+            total_after_discount += discounted_price
             item_total = quantity * product.Price
             products.append({
                 'productID': product.Product_ID,
@@ -68,7 +94,7 @@ def cart():
                 'total': item_total
             })
             total += item_total
-    return render_template('cart.html', products=products, total=total, user=current_user)
+    return render_template('cart.html', products=products, total=total,total_after_discount=total_after_discount , user=current_user)
 
 @views.route('/remove_from_cart', methods=['POST'])
 def remove_from_cart():
@@ -81,6 +107,65 @@ def remove_from_cart():
     else:
         flash("Item not found in cart", "error")
     return redirect(url_for('views.cart'))
+
+@views.route('/checkout', methods=['POST'])
+def checkout():
+    cart = session.get('cart', {})
+    payment_method = request.form.get('payment_method')
+    payment_identifier = request.form.get('payment_identifier')
+    payment_key = request.form.get('payment_key')
+
+    def calculate_discount(price, quantity):
+        if price < 100:
+            return 0.0
+        discount = 0.1 * (quantity - 1)
+        if discount > 0.5:
+            discount = 0.5
+        if quantity < 1:
+            discount = 0.0
+        return discount
+
+    total_price = 0
+    for product_id, quantity in cart.items():
+        product = Product.query.get(product_id)
+        if product:
+            discount = calculate_discount(product.Price, quantity)
+            discounted_price = product.Price * quantity * (1 - discount)
+            total_price += discounted_price
+    # Create Order
+    new_order = Orders(
+        Customer_ID=current_user.Customer_ID,
+        Total_Price=total_price,
+        Date_Of_Order=date.today()
+    )
+    db.session.add(new_order)
+    db.session.commit()
+    # Add OrderDetails with calculated discounts
+    for product_id, quantity in cart.items():
+        product = Product.query.get(product_id)
+        if product:
+            discount_rate = calculate_discount(product.Price, quantity)
+            order_detail = OrderDetails(
+                Order_ID=new_order.Order_ID,
+                Product_ID=product.Product_ID,
+                Discount=discount_rate*100,
+                quantity=quantity
+            )
+            db.session.add(order_detail)
+    # Add Payment
+    new_payment = Payment(
+        Order_ID=new_order.Order_ID,
+        Payment_Method=payment_method,
+        Payment_Identifier=payment_identifier,
+        Payment_Key=payment_key
+    )
+    db.session.add(new_payment)
+    db.session.commit()
+    # Clear cart
+    session['cart'] = {}
+    flash("Order placed and payment recorded!", category='success')
+    return redirect(url_for('views.home'))
+
 @views.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
