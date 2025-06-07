@@ -102,8 +102,6 @@ class Purchase(db.Model):
     Employee_ID = db.Column(db.Integer, db.ForeignKey('Employee.Employee_ID', onupdate='CASCADE'))
     Date_Of_Purchase = db.Column(db.Date)
     Total_Cost = db.Column(db.Float)
-    Payment_Method = db.Column(db.String(50))
-    Tax = db.Column(db.DECIMAL(5, 2))
     employee = db.relationship('Employee', backref=db.backref('purchases'))
 
 

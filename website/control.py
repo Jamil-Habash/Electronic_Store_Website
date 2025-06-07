@@ -1,10 +1,35 @@
-from sqlalchemy import cast, String
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import login_required, current_user
 from .models import db, Employee, Product, Orders, OrderDetails, Customer, Model, InventoryRecord,Purchase
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc,cast, String
 
 control = Blueprint('control', __name__)
+
+
+@control.route('/inventory')
+@login_required
+def inventory():
+    query =(db.session.query(
+        Product,
+        Model.Model_Name,
+        InventoryRecord.Quantity
+    )
+    .join(Model, Model.Model_ID == Product.Product_ID)
+    .join(InventoryRecord, Model.Model_ID == InventoryRecord.Model_ID)
+    )
+    search_field = request.args.get('field')
+    search_value = request.args.get('value')
+
+    if search_field == "Model_Name":
+        query = query.filter(Model.Model_Name.ilike(f"%{search_value}%"))
+
+    elif search_field == "Product_Type":
+        query = query.filter(Product.Product_Type.ilike(f"%{search_value}%"))
+
+    results = query.all()
+    if not results:
+        flash('No products found', 'error')
+    return render_template("inventory.html", user=current_user, products=  results)
 
 @control.route('/dashboard')
 @login_required
@@ -82,13 +107,13 @@ def dashboard():
         .filter(InventoryRecord.Quantity < 5)
         .all()
     )
-    # 7. Total Expenses
+    # 8. Total Expenses
     total_expenses = db.session.query(func.sum(Purchase.Total_Cost)).scalar()
 
-    # 8. Total Expenses
+    # 9. Total profit
     total_profit = (total_revenue) - total_expenses
 
-    # 9. Revenue by product
+    # 10. Revenue by product
     product_sales_data = (
         db.session.query(
             Product.Product_Type,
@@ -116,6 +141,114 @@ def dashboard():
                            product_sales_data=product_sales_data)
 
 
+@control.route('/empManager')
+@login_required
+def employee_manager():
+    search_field = request.args.get('field')
+    search_value = request.args.get('value')
+
+    filters = {
+        "Employee_ID": Employee.Employee_ID,
+        "Emp_Name": Employee.Emp_Name,
+        "Date_Of_Birth": Employee.Date_Of_Birth,
+        "Salary": Employee.Salary,
+        "Email": Employee.Email,
+        "Phone_Number": Employee.Phone_Number,
+        "Address": Employee.Address
+    }
+     if search_field and search_value:
+        column = filters.get(search_field)
+
+        if column.type.python_type.__name__ == 'date':
+
+            employees = Employee.query.filter(column == search_value).all()
+        else:
+            employees = Employee.query.filter(cast(column, String).ilike(f"%{search_value}%")).all()
+    else:
+        employees = Employee.query.all()
+    if not employees:
+        flash('No Employee Found', 'error')
+    return render_template("employee.html", user=current_user, employees=employees)
+
+@control.route('/add_employee', methods=['GET', 'POST'])
+def addEmp():
+    if request.method == "POST":
+        empName = request.form.get('empName')
+        empPhone = request.form.get('empPhoneNumber')
+        empAddress = request.form.get('empAddress')
+        empDateOfBirth = request.form.get('empDateOfBirth')
+        empEmail = request.form.get('empEmail')
+        empPass = request.form.get('empPass')
+        empSalary = request.form.get('empSalary')
+        if len(empName) < 3:
+            flash('Incorrect Name', 'error')
+        elif len(empPhone) != 10:
+            flash('Incorrect Phone Number', 'error')
+        elif len(empAddress) < 3:
+            flash('Incorrect Address', 'error')
+        elif len(empEmail) < 8:
+            flash('Incorrect Email', 'error')
+        elif len(empPass) < 3:
+            flash('Incorrect Password', 'error')
+        else:
+            newEmp = Employee(Emp_Name=empName, Phone_Number=empPhone, Address=empAddress, Email=empEmail,
+                              Pass=empPass, Date_Of_Birth=empDateOfBirth, Salary=empSalary)
+            db.session.add(newEmp)
+            db.session.commit()
+            flash('Successfully Registered', 'success')
+    employees = Employee.query.all()
+    return render_template("employee.html", user=current_user, employees=employees)
+
+
+@control.route('/update_employee', methods=['GET', 'POST'])
+def updateEmp():
+    if request.method == "POST":
+        empID = request.form.get('employeeId')
+        empName = request.form.get('empName')
+        empPhone = request.form.get('empPhoneNumber')
+        empAddress = request.form.get('empAddress')
+        empDateOfBirth = request.form.get('empDateOfBirth')
+        empEmail = request.form.get('empEmail')
+        empPass = request.form.get('empPass')
+        empSalary = request.form.get('empSalary')
+        if len(empName) < 3:
+            flash('Incorrect Name', 'error')
+        elif len(empPhone) != 10:
+            flash('Incorrect Phone Number', 'error')
+        elif len(empAddress) < 3:
+            flash('Incorrect Address', 'error')
+        elif len(empEmail) < 8:
+            flash('Incorrect Email', 'error')
+        elif len(empPass) < 3:
+            flash('Incorrect Password', 'error')
+        else:
+            employee = Employee.query.filter_by(Employee_ID=empID).first()
+            employee.Emp_Name = empName
+            employee.Phone_Number = empPhone
+            employee.Address = empAddress
+            employee.Email = empEmail
+            employee.Pass = empPass
+            employee.Date_Of_Birth = empDateOfBirth
+            employee.Salary = empSalary
+            db.session.commit()
+            flash('Successfully Updated', 'success')
+    employees = Employee.query.all()
+
+    return render_template("employee.html", user=current_user, employees=employees)
+
+@control.route('/delete_employee', methods=['GET', 'POST'])
+def deleteEmp():
+    if request.method == "POST":
+        empID = request.form.get('employeeId')
+        employee = Employee.query.filter_by(Employee_ID=empID).first()
+        if not employee:
+            flash('Employee Does Not Exist', 'error')
+        else:
+            db.session.delete(employee)
+            db.session.commit()
+            flash('Successfully Deleted', 'success')
+    employees = Employee.query.all()
+    return render_template("employee.html", user=current_user, employees=employees)
 @control.route('/orders')
 @login_required
 def orders():
@@ -128,10 +261,8 @@ def orders():
         "Total_Price": Orders.Total_Price,
         "Date_Of_Order": Orders.Date_Of_Order,
     }
-
-    if search_field and search_value:
+     if search_field and search_value:
         column = filters.get(search_field)
-
         if column.type.python_type.__name__ == 'date':
             orders = Orders.query.filter(Orders.Employee_ID.isnot(None),column == search_value).all()
         else:
@@ -150,7 +281,6 @@ def approve_order(order_id):
         return redirect(url_for('control.orders'))
 
     order.Employee_ID = Employee.Employee_ID
-
     # Update stock quantities
     for detail in order.order_details:
         # detail.Product_ID -> get product

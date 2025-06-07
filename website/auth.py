@@ -41,9 +41,9 @@ def signUp():
         phone = request.form.get('phone')
         if len(full_name) < 3:
             flash('Name must be at least 3 characters.', 'error')
-        elif len(password) < 5:
+        elif len(password) < 3:
             flash('Password must be at least 5 characters.', 'error')
-        elif len(phone) < 10:
+        elif len(phone) != 10:
             flash('Phone must be at least 10 characters.', 'error')
         elif len(address) < 10:
             flash('Address must be at least 10 characters.', 'error')

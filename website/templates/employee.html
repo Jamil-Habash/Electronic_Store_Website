@@ -1,211 +1,425 @@
-{% extends "base.html" %}
+{% extends "baseControl.html" %}
 {% block title %}Employee{% endblock %}
 {% block content %}
-<div class="container mt-4">
+    <style>
+        :root {
+            --bg-dark: #121218;
+            --bg-elevated: #1b1b26;
+            --text-main: #f1f1f1;
+            --text-muted: #a1a1aa;
+            --accent: #6ee7b7; /* minty green */
+        }
 
-    <!-- Buttons Section -->
-    <div class="d-flex justify-content-start mt-3 mb-4">
-        <button class="btn btn-primary mr-2" data-toggle="modal" data-target="#addEmployeeModal">
-            <i class="fa fa-plus-circle"></i> Add Employee
-        </button>
-        <button class="btn btn-success mr-2" data-toggle="modal" data-target="#updateEmployeeModal">
-            <i class="fa fa-pencil"></i> Update Employee
-        </button>
-        <button class="btn btn-danger" data-toggle="modal" data-target="#deleteEmployeeModal">
-            <i class="fa fa-trash"></i> Delete Employee
-        </button>
+        label {
+            color: var(--text-main); /* changed to main text color */
+            font-weight: 600;
+        }
+
+        .table-container {
+            background-color: var(--bg-dark);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Table itself */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--bg-elevated);
+            color: var(--text-main);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* Table headers */
+        th {
+            background-color: #2c2c3a;
+            font-weight: 600;
+            text-align: left;
+            padding: 1rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            white-space: nowrap;
+        }
+
+        /* Table rows */
+        td {
+            padding: 1rem;
+            border-top: 1px solid #2f2f3d;
+            vertical-align: middle;
+            white-space: nowrap;
+            color: var(--text-main);
+        }
+
+        /* Zebra striping */
+        tbody tr:nth-child(even) {
+            background-color: #242432;
+        }
+
+        /* Last row no border */
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            background-color: var(--bg-elevated);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-bar select,
+        .search-bar input,
+        .search-bar button {
+            padding: 0.5rem 0.75rem;
+            font-size: 14px;
+            border-radius: 6px;
+            border: none;
+            color: var(--text-main);
+            background-color: #2c2c3a;
+        }
+
+        .search-bar button {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+        }
+
+        .search-bar button:hover {
+            background-color: #52b79d; /* slightly darker mint green */
+        }
+
+        a.btn-outline-secondary {
+            color: var(--text-muted);
+            border-color: var(--text-muted);
+            background-color: transparent;
+            font-weight: 600;
+        }
+
+        a.btn-outline-secondary:hover {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+            border-color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* Buttons Section */
+        .btn-primary {
+            background-color: var(--accent);
+            border: none;
+            color: var(--bg-dark);
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            background-color: #52b79d;
+        }
+
+        .btn-success {
+            background-color: #22c55e; /* green */
+            border: none;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+        .btn-success:hover {
+            background-color: #16a34a;
+        }
+
+        .btn-danger {
+            background-color: #ef4444; /* red */
+            border: none;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+        .btn-danger:hover {
+            background-color: #b91c1c;
+        }
+
+        /* Hover effect for table rows */
+        #employeeTable tbody tr:hover {
+            color: var(--text-main);
+            background-color: #242432;
+            cursor: pointer;
+        }
+
+        /* Modal content */
+        .modal-content {
+            background-color: var(--bg-elevated);
+            border: 1px solid #3c3c5a;
+            color: var(--text-main);
+            border-radius: 1rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-header, .modal-footer {
+            border: none;
+        }
+
+        /* Form controls inside modals */
+        .modal-body .form-control {
+            background-color: #2c2c3a;
+            border: 1px solid #3c3c5a;
+            color: var(--text-main);
+            border-radius: 6px;
+        }
+        .modal-body .form-control::placeholder {
+            color: var(--text-muted);
+        }
+        .modal-body .form-control:focus {
+            background-color: #242432;
+            border-color: var(--accent);
+            color: var(--text-main);
+            outline: none;
+            box-shadow: 0 0 5px var(--accent);
+        }
+
+        /* Buttons inside modals */
+        .btn-outline-light {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-outline-light:hover {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+        }
+
+    </style>
+
+    <div class="container mt-4">
+
+        <!-- Buttons Section -->
+        <div class="d-flex justify-content-start mt-3 mb-4">
+            <button class="btn btn-primary mr-2" data-toggle="modal" data-target="#addEmployeeModal">
+                <i class="fa fa-plus-circle"></i> Add Employee
+            </button>
+            <button class="btn btn-success mr-2" data-toggle="modal" data-target="#updateEmployeeModal">
+                <i class="fa fa-pencil"></i> Update Employee
+            </button>
+            <button class="btn btn-danger" data-toggle="modal" data-target="#deleteEmployeeModal">
+                <i class="fa fa-trash"></i> Delete Employee
+            </button>
+        </div>
+
+        <form class="form-inline mb-3 search-bar" method="GET" action="/empManager">
+            <label class="mr-2" for="field">Search by:</label>
+            <select class="form-control mr-2" id="field" name="field" required>
+                <option value="">-- Select Field --</option>
+                <option value="Employee_ID">Employee ID</option>
+                <option value="Emp_Name">Name</option>
+                <option value="Phone_Number">Phone Number</option>
+                <option value="Address">Address</option>
+                <option value="Date_Of_Birth">Date of Birth</option>
+                <option value="Email">Email</option>
+                <option value="Salary">Salary</option>
+            </select>
+
+            <input type="text" class="form-control mr-2" name="value" placeholder="Search..." required>
+            <button type="submit" class="btn">Search</button>
+            <a href="/empManager" class="btn btn-outline-secondary ml-2">Reset</a>
+        </form>
+
+        <!-- Employee Table -->
+        <table class="modern-table" id="employeeTable">
+            <thead>
+                <tr>
+                    <th>Employee_ID</th>
+                    <th>Name</th>
+                    <th>Phone Number</th>
+                    <th>Address</th>
+                    <th>Date Of Birth</th>
+                    <th>Email</th>
+                    <th>Pass</th>
+                    <th>Salary</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                    <tr data-toggle="modal" data-target="#updateEmployeeModal"
+                        data-id="{{ employee.Employee_ID }}"
+                        data-name="{{ employee.Emp_Name }}"
+                        data-phone="{{ employee.Phone_Number }}"
+                        data-address="{{ employee.Address }}"
+                        data-dob="{{ employee.Date_Of_Birth }}"
+                        data-email="{{ employee.Email }}"
+                        data-pass="{{ employee.Pass }}"
+                        data-salary="{{ employee.Salary }}">
+                        <td>{{ employee.Employee_ID }}</td>
+                        <td>{{ employee.Emp_Name }}</td>
+                        <td>{{ employee.Phone_Number }}</td>
+                        <td>{{ employee.Address }}</td>
+                        <td>{{ employee.Date_Of_Birth }}</td>
+                        <td>{{ employee.Email }}</td>
+                        <td>{{ employee.Pass }}</td>
+                        <td>{{ employee.Salary }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
     </div>
 
-    <!-- Employee Table -->
-    <table class="table table-hover" id="employeeTable" style="color: white;">
-        <thead>
-            <tr>
-                <th>Employee_ID</th>
-                <th>Name</th>
-                <th>Phone Number</th>
-                <th>Address</th>
-                <th>Date Of Birth</th>
-                <th>Email</th>
-                <th>Pass</th>
-                <th>Salary</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for employee in employees%}
-            <tr data-toggle="modal" data-target="#updateEmployeeModal"
-                data-id="{{ employee.Employee_ID }}"
-                data-name="{{ employee.Emp_Name }}"
-                data-phone="{{ employee.Phone_Number }}"
-                data-address="{{ employee.Address }}"
-                data-dob="{{ employee.Date_Of_Birth }}"
-                data-email="{{ employee.Email }}"
-                data-pass="{{ employee.Pass }}"
-                data-salary="{{ employee.Salary }}">
-                <td>{{ employee.Employee_ID }}</td>
-                <td>{{ employee.Emp_Name }}</td>
-                <td>{{ employee.Phone_Number }}</td>
-                <td>{{ employee.Address }}</td>
-                <td>{{ employee.Date_Of_Birth }}</td>
-                <td>{{ employee.Email }}</td>
-                <td>{{ employee.Pass }}</td>
-                <td>{{ employee.Salary }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- Add Employee Modal -->
+    <div class="modal fade" id="addEmployeeModal" tabindex="-1" role="dialog" aria-labelledby="addEmployeeModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
 
-</div>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEmployeeModalLabel">Add New Employee</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" style="color: var(--text-main);">&times;</span>
+                    </button>
+                </div>
 
-<!-- Add Employee Modal -->
-<div class="modal fade" id="addEmployeeModal" tabindex="-1" role="dialog" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
+                <div class="modal-body">
+                    <form method="POST" action="/add_employee">
+                        <div class="form-group">
+                            <label for="empName">Full Name</label>
+                            <input type="text" class="form-control" id="empName" name="empName"
+                                   placeholder="Enter Employee Full Name"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="empPhoneNumber">Phone Number</label>
+                            <input type="text" class="form-control" id="empPhoneNumber" name="empPhoneNumber"
+                                   placeholder="Enter Employee Phone Number"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="empAddress">Address</label>
+                            <input type="text" class="form-control" id="empAddress" name="empAddress"
+                                   placeholder="Enter Employee Address"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="empDateOfBirth">Date Of Birth</label>
+                            <input type="date" class="form-control" id="empDateOfBirth" name="empDateOfBirth"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="empEmail">Email Address</label>
+                            <input type="email" class="form-control" id="empEmail" name="empEmail"
+                                   placeholder="Enter Employee Email Address"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="empPass">Password</label>
+                            <input type="password" class="form-control" id="empPass" name="empPass"
+                                   placeholder="Enter Employee Password"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="empSalary">Salary</label>
+                            <input type="text" class="form-control" id="empSalary" name="empSalary"
+                                   placeholder="Enter Employee Salary"/>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Save</button>
+                    </form>
+                </div>
 
-            <div class="modal-header">
-                <h5 class="modal-title" id="addEmployeeModalLabel">Add New Employee</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                   <span aria-hidden="true">&times;</span>
-                </button>
             </div>
-
-            <div class="modal-body">
-                <form method="POST" action="/add_employee">
-                    <div class="form-group">
-                        <label for="empName">Full Name</label>
-                        <input type="text" class="form-control" id="empName" name="empName" placeholder="Enter Employee Full Name" />
-                    </div>
-                    <div class="form-group">
-                        <label for="empPhoneNumber">Phone Number</label>
-                        <input type="text" class="form-control" id="empPhoneNumber" name="empPhoneNumber" placeholder="Enter Employee Phone Number" />
-                    </div>
-                    <div class="form-group">
-                        <label for="empAddress">Address</label>
-                        <input type="text" class="form-control" id="empAddress" name="empAddress" placeholder="Enter Employee Address" />
-                    </div>
-                    <div class="form-group">
-                        <label for="empDateOfBirth">Date Of Birth</label>
-                        <input type="date" class="form-control" id="empDateOfBirth" name="empDateOfBirth" />
-                    </div>
-                    <div class="form-group">
-                        <label for="empEmail">Email Address</label>
-                        <input type="email" class="form-control" id="empEmail" name="empEmail" placeholder="Enter Employee Email Address" />
-                    </div>
-                    <div class="form-group">
-                        <label for="empPass">Password</label>
-                        <input type="password" class="form-control" id="empPass" name="empPass" placeholder="Enter Employee Password" />
-                    </div>
-                    <div class="form-group">
-                        <label for="empSalary">Salary</label>
-                        <input type="text" class="form-control" id="empSalary" name="empSalary" placeholder="Enter Employee Salary" />
-                    </div>
-                    <button type="submit" class="btn btn-primary mt-3">Save</button>
-                </form>
-            </div>
-
         </div>
     </div>
-</div>
 
-<!-- Update Employee Modal -->
-<div class="modal fade" id="updateEmployeeModal" tabindex="-1" role="dialog" aria-labelledby="updateEmployeeModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
+    <!-- Update Employee Modal -->
+    <div class="modal fade" id="updateEmployeeModal" tabindex="-1" role="dialog"
+         aria-labelledby="updateEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
 
-            <div class="modal-header">
-                <h5 class="modal-title" id="updateEmployeeModalLabel">Update Employee</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                   <span aria-hidden="true">&times;</span>
-                </button>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateEmployeeModalLabel">Update Employee</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" style="color: var(--text-main);">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form method="POST" action="/update_employee">
+                        <input type="hidden" id="updateEmployeeId" name="employeeId"/>
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" class="form-control" id="updateName" name="empName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="text" class="form-control" id="updatePhone" name="empPhoneNumber" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input type="text" class="form-control" id="updateAddress" name="empAddress" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Date Of Birth</label>
+                            <input type="date" class="form-control" id="updateDOB" name="empDateOfBirth" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" class="form-control" id="updateEmail" name="empEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="text" class="form-control" id="updatePass" name="empPass" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Salary</label>
+                            <input type="text" class="form-control" id="updateSalary" name="empSalary" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-success mt-3">Save Changes</button>
+                    </form>
+                </div>
+
             </div>
-
-            <div class="modal-body">
-                <form method="POST" action="/update_employee">
-                    <input type="hidden" id="updateEmployeeId" name="employeeId" />
-                    <div class="form-group">
-                        <label>Name</label>
-                        <input type="text" class="form-control" id="updateName" name="empName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="text" class="form-control" id="updatePhone" name="empPhoneNumber" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Address</label>
-                        <input type="text" class="form-control" id="updateAddress" name="empAddress" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Date Of Birth</label>
-                        <input type="date" class="form-control" id="updateDOB" name="empDateOfBirth" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" class="form-control" id="updateEmail" name="empEmail" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="text" class="form-control" id="updatePass" name="empPass" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Salary</label>
-                        <input type="text" class="form-control" id="updateSalary" name="empSalary" required>
-                    </div>
-
-                    <button type="submit" class="btn btn-success mt-3">Save Changes</button>
-                </form>
-            </div>
-
         </div>
     </div>
-</div>
-<!-- Delete Employee Modal -->
-<div class="modal fade" id="deleteEmployeeModal" tabindex="-1" role="dialog" aria-labelledby="deleteEmployeeModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
+    <!-- Delete Employee Modal -->
+    <div class="modal fade" id="deleteEmployeeModal" tabindex="-1" role="dialog"
+         aria-labelledby="deleteEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
 
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteEmployeeModalLabel">Delete Employee</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                   <span aria-hidden="true">&times;</span>
-                </button>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteEmployeeModalLabel">Delete Employee</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" style="color: var(--text-main);">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form method="POST" action="/delete_employee">
+                        <div class="form-group">
+                            <label for="deleteEmployeeId">Enter Employee ID</label>
+                            <input type="text" class="form-control" id="deleteEmployeeId" name="employeeId" required
+                                   placeholder="Employee ID">
+                        </div>
+                        <button type="submit" class="btn btn-danger mt-3">Delete</button>
+                    </form>
+                </div>
+
             </div>
-
-            <div class="modal-body">
-                <form method="POST" action="/delete_employee">
-                    <div class="form-group">
-                        <label for="deleteEmployeeId">Enter Employee ID</label>
-                        <input type="text" class="form-control" id="deleteEmployeeId" name="employeeId" required placeholder="Employee ID">
-                    </div>
-                    <button type="submit" class="btn btn-danger mt-3">Delete</button>
-                </form>
-            </div>
-
         </div>
     </div>
-</div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    var rows = document.querySelectorAll("#employeeTable tbody tr");
-    rows.forEach(row => {
-        row.addEventListener("click", function() {
-            document.getElementById("updateEmployeeId").value = this.getAttribute("data-id");
-            document.getElementById("updateName").value = this.getAttribute("data-name");
-            document.getElementById("updatePhone").value = this.getAttribute("data-phone");
-            document.getElementById("updateAddress").value = this.getAttribute("data-address");
-            document.getElementById("updateDOB").value = this.getAttribute("data-dob");
-            document.getElementById("updateEmail").value = this.getAttribute("data-email");
-            document.getElementById("updatePass").value = this.getAttribute("data-pass");
-            document.getElementById("updateSalary").value = this.getAttribute("data-salary");
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var rows = document.querySelectorAll("#employeeTable tbody tr");
+            rows.forEach(row => {
+                row.addEventListener("click", function () {
+                    document.getElementById("updateEmployeeId").value = this.getAttribute("data-id");
+                    document.getElementById("updateName").value = this.getAttribute("data-name");
+                    document.getElementById("updatePhone").value = this.getAttribute("data-phone");
+                    document.getElementById("updateAddress").value = this.getAttribute("data-address");
+                    document.getElementById("updateDOB").value = this.getAttribute("data-dob");
+                    document.getElementById("updateEmail").value = this.getAttribute("data-email");
+                    document.getElementById("updatePass").value = this.getAttribute("data-pass");
+                    document.getElementById("updateSalary").value = this.getAttribute("data-salary");
+                });
+            });
         });
-    });
-});
-</script>
-<style>
-#employeeTable tbody tr:hover {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.1);
-    cursor: pointer;
-}
-</style>
+    </script>
 
 {% endblock %}
