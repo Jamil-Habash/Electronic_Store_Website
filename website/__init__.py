@@ -13,10 +13,10 @@ def create_app():
 
     from .views import views
     from .auth import auth
-    from .employee import employee
+    from .control import control
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
-    app.register_blueprint(employee, url_prefix='/')
+    app.register_blueprint(control, url_prefix='/')
 
     from .models import Employee,Customer
 

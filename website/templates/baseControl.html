@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="{{ url_for('static', filename='Logo.png') }}" type="image/x-icon">
+    <title>{% block title %}ElectroMart Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" />
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1f1f2e, #2b2b40);
+            color: white;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 60px;
+            background-color: #141421;
+            overflow-x: hidden;
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar:hover {
+            width: 200px;
+        }
+
+        .sidebar a {
+            padding: 15px 20px;
+            text-decoration: none;
+            font-size: 16px;
+            color: white;
+            display: flex;
+            align-items: center;
+            transition: background 0.3s;
+            white-space: nowrap;
+        }
+
+        .sidebar a i {
+            margin-right: 15px;
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar span {
+            display: none;
+        }
+
+        .sidebar:hover span {
+            display: inline;
+        }
+
+        .sidebar a:hover {
+            background-color: #2d2d44;
+        }
+
+        .main-content {
+            margin-left: 60px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .sidebar:hover ~ .main-content {
+            margin-left: 200px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <a href="/dashboard"><i>🔧</i><span>Dashboard</span></a>
+    <a href="#"><i>📦</i><span>Products</span></a>
+    <a href="#"><i>💳</i><span>Orders</span></a>
+    <a href="#"><i>👥</i><span>Employees</span></a>
+    <a href="#"><i>🏪</i><span>Inventory</span></a>
+    <a href="#"><i>📚</i><span>Catalog</span></a>
+    <a href="#"><i>📊</i><span>Reports</span></a>
+    <a href="/logout"><i>🔒</i><span>Logout</span></a>
+</div>
+
+<!-- Dynamic content area -->
+<div class="main-content">
+    {% block content %}
+    {% endblock %}
+</div>
+
+</body>
+</html>

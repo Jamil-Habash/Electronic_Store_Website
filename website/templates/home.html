@@ -3,11 +3,11 @@
 {% block content %}
 <style>
 .carousel-item {
-    min-height: 350px;
+    min-height: 390px;
 }
 
 .product-description {
-    min-height: 150px;
+    min-height: 180px;
 }
 </style>
 <!-- Hero Video Section (Full screen background) -->
@@ -79,6 +79,7 @@
                             <p>{{ product.Descriptions }}</p>
                             <h4 style="color: #d2b48c;">${{ product.Price }}</h4>
                             <p><strong>Available:</strong> {{ product.model.inventory_records.Quantity if product.model.inventory_records else 'N/A' }}</p>
+                            <p><strong>Warranty:</strong> {{ product.Warranty}} Month</p>
                             <a href="/product/{{ product.Product_ID }}" class="btn btn-primary mt-3">Buy</a>
                         </div>
                     </div>
@@ -115,6 +116,7 @@
                             <p>{{ product.Descriptions }}</p>
                             <h4 style="color: #d2b48c;">${{ product.Price }}</h4>
                             <p><strong>Available:</strong> {{ product.model.inventory_records.Quantity if product.model.inventory_records else 'N/A' }}</p>
+                            <p><strong>Warranty:</strong> {{ product.Warranty}} Month</p>
                             <a href="/product/{{ product.Product_ID }}" class="btn btn-primary mt-3">Buy</a>
                         </div>
                     </div>
@@ -130,5 +132,50 @@
         </div>
     </div>
 </section>
-
+<!-- Brands Section -->
+<section id="brands" class="py-5 w-100" style="background-color: #111; color: #f5f5f5;">
+    <div class="container text-center">
+        <h2 class="mb-4" style="color: #d2b48c;">Brands</h2>
+        <div class="row justify-content-center">
+            <div class="col-6 col-sm-4 col-md-2 mb-4">
+                <img src="{{ url_for('static', filename='samsung.png') }}" class="img-fluid" style="max-height: 60px;" alt="Samsung">
+            </div>
+            <div class="col-6 col-sm-4 col-md-2 mb-4">
+                <img src="{{ url_for('static', filename='Asus.png') }}" class="img-fluid" style="max-height: 60px;" alt="Asus">
+            </div>
+            <div class="col-6 col-sm-4 col-md-2 mb-4">
+                <img src="{{ url_for('static', filename='dell.png') }}" class="img-fluid" style="max-height: 60px;" alt="Dell">
+            </div>
+            <div class="col-6 col-sm-4 col-md-2 mb-4">
+                <img src="{{ url_for('static', filename='hp.png') }}" class="img-fluid" style="max-height: 60px;" alt="HP">
+            </div>
+            <div class="col-6 col-sm-4 col-md-2 mb-4">
+                <img src="{{ url_for('static', filename='apple.png') }}" class="img-fluid" style="max-height: 60px;" alt="Apple">
+            </div>
+            <div class="col-6 col-sm-4 col-md-2 mb-4">
+                <img src="{{ url_for('static', filename='microsoft.png') }}" class="img-fluid" style="max-height: 60px;" alt="Microsoft">
+            </div>
+            <div class="col-6 col-sm-4 col-md-2 mb-4">
+                <img src="{{ url_for('static', filename='lenovo.png') }}" class="img-fluid" style="max-height: 60px;" alt="Lenovo">
+            </div>
+            <div class="col-6 col-sm-4 col-md-2 mb-4">
+                <img src="{{ url_for('static', filename='LG.png') }}" class="img-fluid" style="max-height: 60px;" alt="LG">
+            </div>
+            <div class="col-6 col-sm-4 col-md-2 mb-4">
+                <img src="{{ url_for('static', filename='razer.png') }}" class="img-fluid" style="max-height: 60px;" alt="Razer">
+            </div>
+            <div class="col-6 col-sm-4 col-md-2 mb-4">
+                <img src="{{ url_for('static', filename='msi.png') }}" class="img-fluid" style="max-height: 60px;" alt="Msi">
+            </div>
+        </div>
+    </div>
+        <!-- Contact Information -->
+        <div class="text-center">
+            <h2 style="color: #d2b48c;">Contact Us</h2>
+            <p class="lead">Have questions or need assistance? Reach out to us anytime!</p>
+            <p><i class="fa fa-envelope me-2"></i> support@voyager.com</p>
+            <p><i class="fa fa-phone me-2"></i> 2420392</p>
+            <p><i class="fa fa-map-marker me-2"></i> 123 Voyager St, Surda, Rammallah</p>
+        </div>
+</section>
 {% endblock %}
