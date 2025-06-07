@@ -16,7 +16,7 @@ def login():
             if  employee.Pass == password:
                 flash('Logged in successfully', 'success')
                 login_user( employee, remember=True)
-                return redirect(url_for('views.home'))
+                return redirect(url_for('control.dashboard'))
             else:
                 flash('Incorrect password', 'error')
         elif customer:
