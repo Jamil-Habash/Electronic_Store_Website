@@ -1,0 +1,186 @@
+{% extends "baseControl.html" %}
+{% block title %}Purchase Orders{% endblock %}
+{% block content %}
+
+<style>
+    :root {
+        --bg-dark: #121218;
+        --bg-elevated: #1b1b26;
+        --text-main: #f1f1f1;
+        --text-muted: #a1a1aa;
+        --accent: #6ee7b7;
+    }
+
+    .modern-table-container {
+        background-color: var(--bg-dark);
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .modern-table {
+        border-collapse: collapse;
+        width: 100%;
+        color: var(--text-main);
+        background-color: var(--bg-elevated);
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+
+    .modern-table th {
+        background-color: #2c2c3a;
+        color: var(--accent);
+        font-weight: 600;
+        padding: 1rem;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+    }
+
+    .modern-table td {
+        padding: 1rem;
+        border-top: 1px solid #2f2f3d;
+        color: var(--text-main);
+    }
+
+    .modern-table tbody tr {
+        transition: background-color 0.2s ease;
+        cursor: pointer;
+    }
+
+    .modern-table tbody tr:hover {
+        background-color: #242432;
+    }
+
+    .modal-content {
+        background-color: var(--bg-elevated);
+        border: 1px solid #3c3c5a;
+        color: var(--text-main);
+        border-radius: 1rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-header, .modal-footer {
+        border: none;
+    }
+
+    .btn-outline-light {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .btn-outline-light:hover {
+        background-color: var(--accent);
+        color: var(--bg-dark);
+    }
+
+</style>
+
+<div class="container py-5">
+    <h2 class="text-light mb-5">🧾 Purchase Orders</h2>
+    <!-- Search Bar -->
+    <form class="form-inline mb-4 p-4 rounded" method="GET" action="/purchase_orders" style="background-color: var(--bg-elevated); box-shadow: 0 8px 24px rgba(0,0,0,0.4); border-radius: 1rem;">
+                <div class="form-group mr-3 mb-2">
+                    <label for="field" class="form-label text-white mr-2">🔍 Search by:</label>
+                    <select class="form-control" id="field" name="field" required
+                            style="background-color: #2c2c3a; color: var(--text-main); border: none;">
+                        <option value="">-- Select Field --</option>
+                        <option value="Purchase_ID">Purchase ID</option>
+                        <option value="Employee_ID">Employee ID</option>
+                        <option value="Date_Of_Purchase">Date Of Purchase</option>
+                        <option value="Total_Price">Total Price</option>
+                    </select>
+                </div>
+
+                <div class="form-group mr-3 mb-2">
+                    <input type="text" class="form-control" name="value" placeholder="Enter search value..." required
+                           style="background-color: #2c2c3a; color: var(--text-main); border: none;">
+                </div>
+                <button type="submit" class="btn btn-outline-light mb-2 mr-2">Search</button>
+                <a href="/purchase_orders" class="btn btn-outline-secondary mb-2">Reset</a>
+    </form>
+    {% if purchases_order %}
+    <div class="modern-table-container mb-4">
+        <h5 class="text-white mb-4">All Purchase Orders</h5>
+        <div class="table-responsive">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Purchase ID</th>
+                        <th>Employee</th>
+                        <th>Date</th>
+                        <th>Total Price ($)</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase_order in purchases_order %}
+                    <tr>
+                        <td>{{ purchase_order.Purchase_ID }}</td>
+                        <td>{{ purchase_order.employee.Emp_Name if purchase_order.employee else 'N/A' }}</td>
+                        <td>{{ purchase_order.Date_Of_Purchase.strftime('%Y-%m-%d') if purchase_order.Date_Of_Purchase else 'N/A' }}</td>
+                        <td>{{ "%.2f"|format(purchase_order.Total_Cost or 0) }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#orderModal{{ purchase_order.Purchase_ID }}">View</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="card bg-secondary text-white shadow mb-4">
+        <div class="card-body text-center">
+            <h5 class="card-title">No Purchase Orders Found</h5>
+            <p>There are currently no Purchase orders to display.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Modals-->
+    {% for purchase_order in purchases_order %}
+    <div class="modal fade" id="orderModal{{ purchase_order.Purchase_ID }}" tabindex="-1" aria-labelledby="orderModalLabel{{ purchase_order.Purchase_ID }}" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="orderModalLabel{{ purchase_order.Purchase_ID }}">Purchase Order Details</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Employee:</strong> {{ purchase_order.employee.Emp_Name if purchase_order.employee else 'N/A' }}</p>
+            <p><strong>Date of Purchase:</strong> {{ purchase_order.Date_Of_Purchase.strftime('%Y-%m-%d') if purchase_order.Date_Of_Purchase else 'N/A' }}</p>
+            <hr>
+            <table class="modern-table table-sm">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Unit Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for detail in purchase_order.purchase_details %}
+                <tr>
+                  <td>{{ detail.model.Model_Name if detail.model else 'Unknown Product' }}</td>
+                  <td>{{ detail.Quantity }}</td>
+                  <td>{{ detail.Cost_Per_Unit }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="text-center">No order details found</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <p><strong>Total Price:</strong> ${{ "%.2f"|format(purchase_order.Total_Cost or 0) }}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

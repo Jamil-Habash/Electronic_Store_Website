@@ -254,7 +254,6 @@ def dashboard():
         .filter(Orders.Employee_ID.isnot(None))
         .all()
     )
-
     # 3. Total Revenue
     total_revenue = db.session.query(func.sum(Orders.Total_Price)).filter(Orders.Employee_ID.isnot(None)).scalar()
 
@@ -474,20 +473,36 @@ def approve_order(order_id):
         return redirect(url_for('control.orders'))
 
     order.Employee_ID = Employee.Employee_ID
-    # Update stock quantities
     for detail in order.order_details:
-        # detail.Product_ID -> get product
         product = Product.query.get(detail.Product_ID)
         if product:
-            # Get inventory record by Model_ID
             inventory_record = InventoryRecord.query.filter_by(Model_ID=product.Product_ID).first()
             if inventory_record:
-                # Reduce stock by ordered quantity
                 inventory_record.Quantity -= detail.quantity
                 if inventory_record.Quantity < 0:
-                    inventory_record.Quantity = 0  # prevent negative stock
-
+                    inventory_record.Quantity = 0
     db.session.commit()
-
     flash(f'Order #{order_id} approved and inventory updated.', 'success')
     return redirect(url_for('control.orders'))
+
+@control.route('/purchase_orders')
+@login_required
+def purchase_orders():
+    search_field = request.args.get('field')
+    search_value = request.args.get('value')
+    filters = {
+        "Purchase_ID": Purchase.Purchase_ID,
+        "Employee_ID": Purchase.Employee_ID,
+        "Date_Of_Purchase": Purchase.Date_Of_Purchase,
+        "Total_Price": Purchase.Total_Cost,
+    }
+
+    if search_field and search_value:
+        column = filters.get(search_field)
+        if column.type.python_type.__name__ == 'date':
+            purchases_order = Purchase.query.filter(column == search_value).all()
+        else:
+            purchases_order = Purchase.query.filter(cast(column, String).ilike(f"%{search_value}%")).all()
+    else:
+        purchases_order = Purchase.query.all()
+    return render_template('purchase_orders.html', purchases_order=purchases_order, user=current_user)
