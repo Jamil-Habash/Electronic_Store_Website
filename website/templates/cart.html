@@ -123,22 +123,39 @@ Cart
           <hr class="my-4">
 
           <h5 class="mb-3">Payment Information</h5>
-          <div class="mb-3">
-            <label class="form-label">Payment Method</label>
-            <select class="form-select" name="payment_method" required>
-              <option value="Credit Card">Credit Card</option>
-              <option value="PayPal">PayPal</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Payment Identifier</label>
-            <input type="text" class="form-control" name="payment_identifier" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Payment Key</label>
-            <input type="text" class="form-control" name="payment_key" required>
-          </div>
-        </div>
+
+            <div class="mb-3">
+              <label class="form-label">Payment Method</label>
+              <select class="form-select" name="payment_method" id="payment_method" required onchange="togglePaymentFields()">
+                <option value="">-- Select Payment Method --</option>
+                <option value="Credit Card">Credit Card</option>
+                <option value="PayPal">PayPal</option>
+              </select>
+            </div>
+
+            <!-- Credit Card Fields -->
+            <div id="credit_card_fields" style="display: none;">
+              <div class="mb-3">
+                <label class="form-label">Credit Card Number</label>
+                <input type="text" class="form-control" name="credit_card_number">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">CVC</label>
+                <input type="text" class="form-control" name="cvc">
+              </div>
+            </div>
+
+            <!-- PayPal Fields -->
+            <div id="paypal_fields" style="display: none;">
+              <div class="mb-3">
+                <label class="form-label">PayPal Email</label>
+                <input type="email" class="form-control" name="paypal_email">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">PayPal Password</label>
+                <input type="password" class="form-control" name="paypal_password">
+              </div>
+            </div>
 
         <div class="modal-footer">
               <button type="submit" class="btn btn-success">Confirm & Pay</button>
@@ -156,4 +173,12 @@ Cart
     {% endif %}
   </div>
 </div>
+
+<script>
+function togglePaymentFields() {
+  const method = document.getElementById('payment_method').value;
+  document.getElementById('credit_card_fields').style.display = method === 'Credit Card' ? 'block' : 'none';
+  document.getElementById('paypal_fields').style.display = method === 'PayPal' ? 'block' : 'none';
+}
+</script>
 {% endblock %}

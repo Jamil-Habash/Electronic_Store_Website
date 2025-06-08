@@ -2,7 +2,7 @@ from datetime import date
 from flask import Blueprint, render_template,send_file,request,flash, redirect, url_for,session,g
 from flask_login import login_required, current_user
 import io
-from .models import Product,Orders,OrderDetails,Model,Customer, Payment
+from .models import Product,Orders,OrderDetails,Model,Customer, Payment, InventoryRecord
 from . import db
 from sqlalchemy import func,or_
 
@@ -49,18 +49,27 @@ def add_to_cart(product_id):
     if quantity < 1:
         quantity = 1
 
+    product = Product.query.get(product_id)
+    inventory = InventoryRecord.query.filter_by(Model_ID=product.Product_ID).first()
+    stock = inventory.Quantity
     cart = session.get('cart', {})
-    cart[str(product_id)] = cart.get(str(product_id), 0) + quantity
+    current_quantity_in_cart = cart.get(str(product_id), 0)
+
+    if current_quantity_in_cart + quantity > stock:
+        remaining = stock - current_quantity_in_cart
+        flash(f"Only {remaining} left in stock. Cannot add more.", category='error')
+        return redirect(url_for('views.products'))
+    cart[str(product_id)] = current_quantity_in_cart + quantity
     session['cart'] = cart
 
-    flash(f"Added {quantity} of product to cart!", category='success')
+    flash(f"Added {quantity} of {product.model.Model_Name} to cart!", category='success')
     return redirect(url_for('views.products'))
 
 
 @views.before_request
-def before_request():
+def cart_count():
     cart = session.get('cart', {})
-    g.cart_count = sum(cart.values()) if cart else 0
+    g.cart_count = len(cart) if cart else 0
 
 @views.route('/cart')
 def cart():

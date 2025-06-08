@@ -52,9 +52,8 @@
         <div class="navbar-nav">
             <a class="nav-item nav-link" id="home" href="/">Home</a>
             <a class="nav-item nav-link" id="products" href="/products">Products</a>
-           <a href="{{ url_for('views.cart') }}" class="nav-link">
-  🛒{% if g.cart_count > 0 %}<sup style="color: orange;">+{{ g.cart_count }}</sup>{% endif %}
-</a>
+            <a href="{{ url_for('views.cart') }}" class="nav-link">
+            🛒{% if g.cart_count > 0 %}<sup style="color: orange;">+{{ g.cart_count }}</sup>{% endif %}</a>
         </div>
 
         <div class="nav-item dropdown pr-4">
