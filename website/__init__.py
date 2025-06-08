@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask,session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
@@ -8,7 +8,7 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = '1234Abd'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root123@localhost/electronic_store'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:AbdallahK123@localhost/electronic_store'
     db.init_app(app)
 
     from .views import views
@@ -25,14 +25,11 @@ def create_app():
     login_manager.init_app(app)
 
     @login_manager.user_loader
-    def load_user(Employee_ID):
-        return Employee.query.get(int(Employee_ID))
-    @login_manager.user_loader
-    def load_user(Customer_ID):
-        return Customer.query.get(int(Customer_ID))
-
-    @login_manager.user_loader
-    def load_user(Customer_ID):
-        return Customer.query.get(int(Customer_ID))
-
+    def load_user(user_id):
+        user_type = session.get('user_type')
+        if user_type == 'employee':
+            return Employee.query.get(int(user_id))
+        elif user_type == 'customer':
+            return Customer.query.get(int(user_id))
+        return None
     return app

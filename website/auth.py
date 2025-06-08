@@ -15,6 +15,7 @@ def login():
         if  employee:
             if  employee.Pass == password:
                 flash('Logged in successfully', 'success')
+                session['user_type'] = 'employee'
                 login_user( employee, remember=True)
                 return redirect(url_for('control.dashboard'))
             else:
@@ -22,6 +23,7 @@ def login():
         elif customer:
             if customer.Pass == password:
                 flash('Logged in successfully', 'success')
+                session['user_type'] = 'customer'
                 login_user( customer, remember=True)
                 return redirect(url_for('views.home'))
             else:

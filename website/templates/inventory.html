@@ -112,7 +112,7 @@
                 {% for product, model_name, quantity in products %}
                     <tr data-bs-toggle="modal" data-bs-target="#productModal{{ product.Product_ID }}">
                         <td>{{ model_name }}</td>
-                        <td class="text-muted">{{ product.Product_Type }}</td>
+                        <td>{{ product.Product_Type }}</td>
                         <td>${{ '%.2f' | format(product.Price) }}</td>
                         <td>{{ quantity }}</td>
                         <td>{{ product.Warranty }} mo</td>
