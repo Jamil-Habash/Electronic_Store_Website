@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import login_required, current_user
-from .models import db, Employee, Product, Orders, OrderDetails, Customer, Model, InventoryRecord,Purchase
+from .models import db, Employee, Product, Orders, OrderDetails, Customer, Model, InventoryRecord,Purchase , PurchaseDetail
 from sqlalchemy import func, desc,cast, String
 
 control = Blueprint('control', __name__)
@@ -64,10 +64,10 @@ def dashboard():
         .join(OrderDetails, OrderDetails.Order_ID == Orders.Order_ID)
         .group_by(Employee.Employee_ID)
         .order_by(desc('items_sold'))
-        .filter(Employee.Emp_Name != "abdallah kokash" and Orders.Employee_ID.isnot(None))
+        .filter(Employee.Emp_Name != "abdallah kokash")
+        .filter(Orders.Employee_ID.isnot(None))
         .all()
     )
-
     # 3. Total Revenue
     total_revenue = db.session.query(func.sum(Orders.Total_Price)).filter(Orders.Employee_ID.isnot(None)).scalar()
 
@@ -156,7 +156,7 @@ def employee_manager():
         "Phone_Number": Employee.Phone_Number,
         "Address": Employee.Address
     }
-     if search_field and search_value:
+    if search_field and search_value:
         column = filters.get(search_field)
 
         if column.type.python_type.__name__ == 'date':
@@ -261,7 +261,7 @@ def orders():
         "Total_Price": Orders.Total_Price,
         "Date_Of_Order": Orders.Date_Of_Order,
     }
-     if search_field and search_value:
+    if search_field and search_value:
         column = filters.get(search_field)
         if column.type.python_type.__name__ == 'date':
             orders = Orders.query.filter(Orders.Employee_ID.isnot(None),column == search_value).all()
@@ -281,20 +281,36 @@ def approve_order(order_id):
         return redirect(url_for('control.orders'))
 
     order.Employee_ID = Employee.Employee_ID
-    # Update stock quantities
     for detail in order.order_details:
-        # detail.Product_ID -> get product
         product = Product.query.get(detail.Product_ID)
         if product:
-            # Get inventory record by Model_ID
             inventory_record = InventoryRecord.query.filter_by(Model_ID=product.Product_ID).first()
             if inventory_record:
-                # Reduce stock by ordered quantity
                 inventory_record.Quantity -= detail.quantity
                 if inventory_record.Quantity < 0:
-                    inventory_record.Quantity = 0  # prevent negative stock
-
+                    inventory_record.Quantity = 0
     db.session.commit()
-
     flash(f'Order #{order_id} approved and inventory updated.', 'success')
     return redirect(url_for('control.orders'))
+
+@control.route('/purchase_orders')
+@login_required
+def purchase_orders():
+    search_field = request.args.get('field')
+    search_value = request.args.get('value')
+    filters = {
+        "Purchase_ID": Purchase.Purchase_ID,
+        "Employee_ID": Purchase.Employee_ID,
+        "Date_Of_Purchase": Purchase.Date_Of_Purchase,
+        "Total_Price": Purchase.Total_Cost,
+    }
+
+    if search_field and search_value:
+        column = filters.get(search_field)
+        if column.type.python_type.__name__ == 'date':
+            purchases_order = Purchase.query.filter(column == search_value).all()
+        else:
+            purchases_order = Purchase.query.filter(cast(column, String).ilike(f"%{search_value}%")).all()
+    else:
+        purchases_order = Purchase.query.all()
+    return render_template('purchase_orders.html', purchases_order=purchases_order, user=current_user)
