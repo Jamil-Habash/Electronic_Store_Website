@@ -13,11 +13,16 @@ def login():
         employee =Employee.query.filter_by(Email=email).first()
         customer =Customer.query.filter_by(Email=email).first()
         if  employee:
-            if  employee.Pass == password:
+            if  employee.Pass == password and employee.Email == "manager@outlook.com":
                 flash('Logged in successfully', 'success')
                 session['user_type'] = 'employee'
                 login_user( employee, remember=True)
                 return redirect(url_for('control.dashboard'))
+            elif employee.Pass == password and employee.Email != "manager@outlook.com":
+                flash('Logged in successfully', 'success')
+                session['user_type'] = 'employee'
+                login_user(employee, remember=True)
+                return redirect(url_for('control.purchase'))
             else:
                 flash('Incorrect password', 'error')
         elif customer:
