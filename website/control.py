@@ -1,22 +1,207 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import login_required, current_user
-from .models import db, Employee, Product, Orders, OrderDetails, Customer, Model, InventoryRecord,Purchase , PurchaseDetail
-from sqlalchemy import func, desc,cast, String
+from .models import db, Employee, Product, Orders, OrderDetails, Customer, Model, InventoryRecord, Purchase,PurchaseDetail
+from sqlalchemy import func, desc, cast, String
+from datetime import date
+import os
 
 control = Blueprint('control', __name__)
 
 
+@control.route('/purchase')
+@login_required
+def purchase():
+    products = [
+        {
+            "Model_Name": "Inspiron 15",
+            "price": 500,
+            "warranty": "12 month",
+            "type": "Laptop",
+            "image": "Inspiron 15.jpg",
+            "description": "Dell Inspiron 15 is a dependable all-rounder designed for daily productivity. Equipped with an Intel Core i5, 8GB RAM,"
+                           "and 256GB SSD, it delivers smooth multitasking performance. Its 15.6\" Full HD display provides vibrant visuals, and the full-size keyboard enhances typing comfort. "
+                           "Ideal for students and professionals who need a reliable, budget-friendly machine with strong battery life and solid connectivity options."
+        },
+        {
+            "Model_Name": "XPS 13",
+            "price": 1000,
+            "warranty": "24 month",
+            "type": "Laptop",
+            "image": "XPS 13.jpg",
+            "description": "Dell XPS 13 blends power with elegance. Featuring a sleek aluminum chassis, it houses an Intel Core i7, 16GB RAM, and 512GB SSD. "
+                           "The 13.3\" InfinityEdge display offers near-borderless viewing with rich colors. Great for professionals on the move, its portability, long battery life, "
+                           "and premium build make it perfect for presentations, video calls, and creative workflows."
+        },
+        {
+            "Model_Name": "Pavilion 14",
+            "price": 600,
+            "warranty": "12 month",
+            "type": "Laptop",
+            "image": "Pavilion 14.jpg",
+            "description": "HP Pavilion 14 offers a refined computing experience with an AMD Ryzen 5, 8GB RAM, and 512GB SSD. "
+                           "Its compact and stylish design makes it perfect for students or casual users. The 14\" FHD display, fast boot time, and responsive performance make everyday tasks—from streaming to document editing—efficient and enjoyable."
+        },
+        {
+            "Model_Name": "Envy 13",
+            "price": 1300,
+            "warranty": "24 month",
+            "type": "Laptop",
+            "image": "Envy 13.jpg",
+            "description": "HP Envy 13 combines power, portability, and aesthetics. Equipped with an Intel Core i7, 16GB RAM, and 512GB SSD, it easily handles demanding apps. "
+                           "The 13.3\" FHD touchscreen is sharp and responsive, while the all-metal chassis adds a premium feel. Bang & Olufsen speakers, fingerprint sensor, and long battery life make it perfect for creatives and professionals alike."
+        },
+        {
+            "Model_Name": "ThinkPad X1 Carbon",
+            "price": 1200,
+            "warranty": "36 month",
+            "type": "Laptop",
+            "image": "ThinkPad X1 Carbon.jpg",
+            "description": "Lenovo ThinkPad X1 Carbon is a business-class ultrabook known for its military-grade durability and world-class keyboard. With an Intel Core i7, 16GB RAM, 1TB SSD, "
+                           "and a stunning 14\" UHD display, it's built for serious multitaskers. Features include a fingerprint reader, rapid charging, and a featherlight carbon fiber body—ideal for professionals who demand both power and portability."
+        },
+        {
+            "Model_Name": "IdeaPad 5",
+            "price": 600,
+            "warranty": "12 month",
+            "type": "Laptop",
+            "image": "IdeaPad 5.jpg",
+            "description": "Lenovo IdeaPad 5 is a well-rounded laptop for home and office use. It features an AMD Ryzen 7 processor, 8GB RAM, and 512GB SSD, delivering excellent speed and responsiveness. "
+                           "Its 15.6\" Full HD display with narrow bezels ensures immersive viewing, while Dolby Audio speakers enhance entertainment. Perfect for those who need solid performance without breaking the bank."
+        },
+        {
+            "Model_Name": "MacBook Air M2",
+            "price": 1100,
+            "warranty": "24 month",
+            "type": "Laptop",
+            "image": "MacBook Air M2.jpg",
+            "description": "The new MacBook Air with M2 chip sets a new standard for ultraportables. With 8GB RAM, 256GB SSD, and a brilliant 13.6\" Liquid Retina display, it offers impressive power in a thin, silent design. "
+                           "Ideal for students, developers, and everyday creatives, it supports seamless multitasking, powerful graphics, and over 18 hours of battery life—all in a fanless, ultra-light enclosure."
+        },
+        {
+            "Model_Name": "MacBook Pro 14",
+            "price": 1900,
+            "warranty": "36 month",
+            "type": "Laptop",
+            "image": "MacBook Pro 14.jpg",
+            "description": "Apple MacBook Pro 14 is engineered for performance-hungry professionals. Featuring the Apple M2 Pro chip, 16GB RAM, and 512GB SSD, it handles intensive tasks like video editing, 3D rendering, and music production with ease. "
+                           "Its 14.2\" Liquid Retina XDR display offers stunning brightness and contrast, while studio-quality microphones and powerful speakers enhance creative workflows. Built for professionals who demand excellence."
+        },
+        {
+            "Model_Name": "Asus ROG",
+            "price": 1800,
+            "warranty": "32 month",
+            "type": "Laptop",
+            "image": "Asus ROG.jpg",
+            "description": "Asus ROG series is built for gamers and power users. With high-end AMD Ryzen or Intel Core i9 CPUs, NVIDIA RTX GPUs, RGB keyboards, and superior thermal cooling, it delivers elite gaming performance and multitasking capabilities for streamers and creators."
+        },
+        {
+            "Model_Name": "Lenovo Ideapad 3",
+            "price": 600,
+            "warranty": "24 month",
+            "type": "Laptop",
+            "image": "lenovo ideapad 3.jpg",
+            "description": "Lenovo Ideapad 3 is a budget-friendly laptop offering solid performance for everyday tasks. With Intel i3 or Ryzen 3, a 15.6\" display, and Dolby Audio, it’s great for students, families, and casual browsing or media consumption."
+        },
+        {
+            "Model_Name": "Samsung 15 AI Book 4",
+            "price": 950,
+            "warranty": "12 month",
+            "type": "Laptop",
+            "image": "Samsung 15 AI Book 4.jpg",
+            "description": "Samsung Galaxy Book 4 combines premium design with AI-enhanced performance. Featuring Intel AI chips, Super AMOLED display, and seamless Galaxy ecosystem integration, it’s a stylish and powerful laptop for multitasking professionals and creatives alike."
+        },
+        {
+            "Model_Name": "Asus Tuf F15",
+            "price": 1200,
+            "warranty": "12 month",
+            "type": "Laptop",
+            "image": "Asus Tuf F15.jpg",
+            "description": "Asus TUF F15 is a durable gaming laptop designed for performance under pressure. Equipped with 12th Gen Intel Core processors, NVIDIA GeForce RTX graphics, and military-grade construction, it handles AAA gaming and multitasking with ease."
+        }
+    ]
+
+    return render_template("purchase.html", user=current_user, products=products)
+@control.route('/commit_purchase', methods=['POST'])
+@login_required
+def commit_purchase():
+    product_names = request.form.getlist('model_name')
+    quantities = request.form.getlist('quantity')
+    prices = request.form.getlist('unit_price')
+    product_types = request.form.getlist('product_type')
+    warranties = request.form.getlist('warranty')
+    descriptions = request.form.getlist('description')
+
+    if not product_names:
+        flash("Cart is empty.", "error")
+        return redirect(url_for('control.purchase'))
+
+    total_cost = 0
+    purchase_items = []
+    for name, qty_str, price_str, ptype, warranty_str, desc in zip(
+            product_names, quantities, prices, product_types, warranties, descriptions):
+        qty = int(qty_str)
+        price = float(price_str) +200
+        warranty = int(warranty_str.split(" ")[0])
+        total_cost += qty * price
+        purchase_items.append((name, qty, price, ptype, warranty, desc))
+
+    purchase = Purchase(
+        Employee_ID=current_user.Employee_ID,
+        Date_Of_Purchase=date.today(),
+        Total_Cost=total_cost
+    )
+    db.session.add(purchase)
+    db.session.flush()
+
+    for name, qty, price, ptype, warranty, desc in purchase_items:
+        model = Model.query.filter_by(Model_Name=name).first()
+        detail = PurchaseDetail(
+            Purchase_ID=purchase.Purchase_ID,
+            Model_ID=model.Model_ID,
+            Quantity=qty,
+            Cost_Per_Unit=price
+        )
+        db.session.add(detail)
+
+        product = Product.query.filter_by(Product_ID=model.Model_ID).first()
+        if not product:
+            image_path = os.path.join("website", "static", name + ".jpg")
+            with open(image_path, "rb") as f:
+                image_data = f.read()
+            product = Product(
+                Product_ID=model.Model_ID,
+                Price=price,
+                Product_Type=ptype,
+                Warranty=warranty,
+                Picture=image_data,
+                Descriptions=desc
+            )
+            db.session.add(product)
+
+            inventory_record = InventoryRecord(
+                Model_ID=model.Model_ID,
+                Quantity=qty
+            )
+            db.session.add(inventory_record)
+        else:
+            inventory_record = InventoryRecord.query.filter_by(Model_ID=model.Model_ID).first()
+            if inventory_record:
+                inventory_record.Quantity += qty
+
+    db.session.commit()
+    flash("Purchase committed successfully!", "success")
+    return redirect(url_for('control.purchase'))
 @control.route('/inventory')
 @login_required
 def inventory():
-    query =(db.session.query(
+    query = (db.session.query(
         Product,
         Model.Model_Name,
         InventoryRecord.Quantity
     )
-    .join(Model, Model.Model_ID == Product.Product_ID)
-    .join(InventoryRecord, Model.Model_ID == InventoryRecord.Model_ID)
-    )
+             .join(Model, Model.Model_ID == Product.Product_ID)
+             .join(InventoryRecord, Model.Model_ID == InventoryRecord.Model_ID)
+             )
     search_field = request.args.get('field')
     search_value = request.args.get('value')
 
@@ -29,7 +214,8 @@ def inventory():
     results = query.all()
     if not results:
         flash('No products found', 'error')
-    return render_template("inventory.html", user=current_user, products=  results)
+    return render_template("inventory.html", user=current_user, products=results)
+
 
 @control.route('/dashboard')
 @login_required
@@ -46,7 +232,7 @@ def dashboard():
         .join(OrderDetails, OrderDetails.Product_ID == Product.Product_ID)
         .join(Model, Product.Product_ID == Model.Model_ID)
         .group_by(Product.Product_ID)
-        .join(Orders, Orders.Order_ID==OrderDetails.Order_ID )
+        .join(Orders, Orders.Order_ID == OrderDetails.Order_ID)
         .order_by(desc('total_sold'))
         .filter(Orders.Employee_ID.isnot(None))
         .all()
@@ -64,7 +250,7 @@ def dashboard():
         .join(OrderDetails, OrderDetails.Order_ID == Orders.Order_ID)
         .group_by(Employee.Employee_ID)
         .order_by(desc('items_sold'))
-        .filter(Employee.Emp_Name != "abdallah kokash")
+        .filter(Employee.Email != "manager@outlook.com")
         .filter(Orders.Employee_ID.isnot(None))
         .all()
     )
@@ -170,6 +356,7 @@ def employee_manager():
         flash('No Employee Found', 'error')
     return render_template("employee.html", user=current_user, employees=employees)
 
+
 @control.route('/add_employee', methods=['GET', 'POST'])
 def addEmp():
     if request.method == "POST":
@@ -236,6 +423,7 @@ def updateEmp():
 
     return render_template("employee.html", user=current_user, employees=employees)
 
+
 @control.route('/delete_employee', methods=['GET', 'POST'])
 def deleteEmp():
     if request.method == "POST":
@@ -249,6 +437,8 @@ def deleteEmp():
             flash('Successfully Deleted', 'success')
     employees = Employee.query.all()
     return render_template("employee.html", user=current_user, employees=employees)
+
+
 @control.route('/orders')
 @login_required
 def orders():
@@ -264,13 +454,15 @@ def orders():
     if search_field and search_value:
         column = filters.get(search_field)
         if column.type.python_type.__name__ == 'date':
-            orders = Orders.query.filter(Orders.Employee_ID.isnot(None),column == search_value).all()
+            orders = Orders.query.filter(Orders.Employee_ID.isnot(None), column == search_value).all()
         else:
-            orders = Orders.query.filter(Orders.Employee_ID.isnot(None),cast(column, String).ilike(f"%{search_value}%")).all()
+            orders = Orders.query.filter(Orders.Employee_ID.isnot(None),
+                                         cast(column, String).ilike(f"%{search_value}%")).all()
     else:
         orders = Orders.query.filter(Orders.Employee_ID.isnot(None)).order_by(Orders.Order_ID).all()
     pending_orders = Orders.query.filter(Orders.Employee_ID.is_(None)).all()
     return render_template('orders.html', orders=orders, pending_orders=pending_orders, user=current_user)
+
 
 @control.route('/orders/approve/<int:order_id>', methods=['POST'])
 @login_required
