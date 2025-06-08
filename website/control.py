@@ -132,7 +132,6 @@ def commit_purchase():
     descriptions = request.form.getlist('description')
 
     if not product_names:
-        flash("Cart is empty.", "error")
         return redirect(url_for('control.purchase'))
 
     total_cost = 0
@@ -212,8 +211,6 @@ def inventory():
         query = query.filter(Product.Product_Type.ilike(f"%{search_value}%"))
 
     results = query.all()
-    if not results:
-        flash('No products found', 'error')
     return render_template("inventory.html", user=current_user, products=results)
 
 
@@ -352,8 +349,6 @@ def employee_manager():
             employees = Employee.query.filter(cast(column, String).ilike(f"%{search_value}%")).all()
     else:
         employees = Employee.query.all()
-    if not employees:
-        flash('No Employee Found', 'error')
     return render_template("employee.html", user=current_user, employees=employees)
 
 

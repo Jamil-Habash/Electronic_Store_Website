@@ -104,6 +104,7 @@
 <body>
 <!-- Sidebar -->
 <div class="sidebar">
+   {% if current_user.Email == 'manager@outlook.com' %}
     <a href="/dashboard"><i>🔧</i><span>Dashboard</span></a>
     <a href="/empManager"><i>👥</i><span>Employees</span></a>
     <a href="/purchase"><i>🏪</i><span>Purchase</span></a>
@@ -111,6 +112,12 @@
     <a href="/orders"><i>💳</i><span>Orders</span></a>
     <a href="/inventory"><i>📦</i><span>Inventory</span></a>
     <a href="/logout"><i>🔒</i><span>Logout</span></a>
+    {% else %}
+    <a href="/purchase"><i>🏪</i><span>Purchase</span></a>
+    <a href="/orders"><i>💳</i><span>Orders</span></a>
+    <a href="/inventory"><i>📦</i><span>Inventory</span></a>
+    <a href="/logout"><i>🔒</i><span>Logout</span></a>
+    {% endif %}
 </div>
 <div class="flash-message">
     {% with messages = get_flashed_messages(with_categories=true) %}
