@@ -122,6 +122,26 @@ def checkout():
     payment_identifier = request.form.get('payment_identifier')
     payment_key = request.form.get('payment_key')
 
+    if payment_method == "Credit Card":
+        if not  payment_identifier :
+            flash("Credit Card Number is required", "error")
+            return redirect(url_for('views.cart'))
+        elif any(c.isalpha() for c in  payment_identifier ):
+            flash("Credit Card Number should contain only numbers", "error")
+            return redirect(url_for('views.cart'))
+        if not payment_key:
+            flash("CVC is required", "error")
+            return redirect(url_for('views.cart'))
+        elif any(c.isalpha() for c in payment_key):
+            flash("CVC should contain only numbers", "error")
+            return redirect(url_for('views.cart'))
+    if payment_method == "PayPal":
+        if not payment_identifier:
+            flash("Paypal Email Is Required", "error")
+            return redirect(url_for('views.cart'))
+        if not payment_key:
+            flash("Paypal Password Is Required", "error")
+            return redirect(url_for('views.cart'))
     def calculate_discount(price, quantity):
         if price < 100:
             return 0.0
