@@ -210,22 +210,28 @@
         </div>
 
         <form class="form-inline mb-3 search-bar" method="GET" action="/empManager">
-            <label class="mr-2" for="field">Search by:</label>
-            <select class="form-control mr-2" id="field" name="field" required>
-                <option value="">-- Select Field --</option>
-                <option value="Employee_ID">Employee ID</option>
-                <option value="Emp_Name">Name</option>
-                <option value="Phone_Number">Phone Number</option>
-                <option value="Address">Address</option>
-                <option value="Date_Of_Birth">Date of Birth</option>
-                <option value="Email">Email</option>
-                <option value="Salary">Salary</option>
-            </select>
+    <label class="mr-2" for="field">Search by:</label>
+    <select class="form-control mr-2" id="field" name="field" onchange="toggleRangeInputs()" required>
+        <option value="">-- Select Field --</option>
+        <option value="Employee_ID">Employee ID</option>
+        <option value="Emp_Name">Name</option>
+        <option value="Phone_Number">Phone Number</option>
+        <option value="Address">Address</option>
+        <option value="Date_Of_Birth">Date of Birth</option>
+        <option value="Email">Email</option>
+        <option value="Salary">Salary</option>
+    </select>
 
-            <input type="text" class="form-control mr-2" name="value" placeholder="Search..." required>
-            <button type="submit" class="btn">Search</button>
-            <a href="/empManager" class="btn btn-outline-secondary ml-2">Reset</a>
-        </form>
+    <!-- Normal input -->
+    <input type="text" class="form-control mr-2" id="valueInput" name="value" placeholder="Search...">
+
+    <!-- Range inputs (initially hidden) -->
+    <input type="text" class="form-control mr-2 d-none" id="rangeMinInput" name="range_min" placeholder="Min">
+    <input type="text" class="form-control mr-2 d-none" id="rangeMaxInput" name="range_max" placeholder="Max">
+
+    <button type="submit" class="btn">Search</button>
+    <a href="/empManager" class="btn btn-outline-secondary ml-2">Reset</a>
+</form>
 
         <!-- Employee Table -->
         <table class="modern-table" id="employeeTable">
@@ -421,5 +427,29 @@
             });
         });
     </script>
+    <script>
+    function toggleRangeInputs() {
+        const field = document.getElementById('field').value;
+        const valueInput = document.getElementById('valueInput');
+        const rangeMinInput = document.getElementById('rangeMinInput');
+        const rangeMaxInput = document.getElementById('rangeMaxInput');
+
+        if (field === 'Date_Of_Birth') {
+            rangeMinInput.type = rangeMaxInput.type = 'date';
+        } else if (field === 'Salary') {
+            rangeMinInput.type = rangeMaxInput.type = 'number';
+        }
+
+        if (field === 'Date_Of_Birth' || field === 'Salary') {
+            valueInput.classList.add('d-none');
+            rangeMinInput.classList.remove('d-none');
+            rangeMaxInput.classList.remove('d-none');
+        } else {
+            valueInput.classList.remove('d-none');
+            rangeMinInput.classList.add('d-none');
+            rangeMaxInput.classList.add('d-none');
+        }
+    }
+</script>
 
 {% endblock %}
