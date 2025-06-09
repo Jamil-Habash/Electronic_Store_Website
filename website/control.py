@@ -329,6 +329,8 @@ def dashboard():
 def employee_manager():
     search_field = request.args.get('field')
     search_value = request.args.get('value')
+    range_min = request.args.get('range_min')
+    range_max = request.args.get('range_max')
 
     filters = {
         "Employee_ID": Employee.Employee_ID,
@@ -339,14 +341,15 @@ def employee_manager():
         "Phone_Number": Employee.Phone_Number,
         "Address": Employee.Address
     }
-    if search_field and search_value:
+    if (search_field and search_value) or (range_min and range_min) :
         column = filters.get(search_field)
 
-        if column.type.python_type.__name__ == 'date':
-
-            employees = Employee.query.filter(column == search_value).all()
-        else:
-            employees = Employee.query.filter(cast(column, String).ilike(f"%{search_value}%")).all()
+        if column.type.python_type.__name__ == 'date' and range_min and range_max:
+            employees = Employee.query.filter(column.between(range_min, range_max))
+        elif column.type.python_type.__name__ in ['int', 'float'] and range_min and range_max:
+            employees = Employee.query.filter(column.between(float(range_min), float(range_max)))
+        elif search_value:
+            employees = Employee.query.filter(cast(column, String).ilike(f"%{search_value}%"))
     else:
         employees = Employee.query.all()
     return render_template("employee.html", user=current_user, employees=employees)
@@ -439,6 +442,8 @@ def deleteEmp():
 def orders():
     search_field = request.args.get('field')
     search_value = request.args.get('value')
+    range_min = request.args.get('range_min')
+    range_max = request.args.get('range_max')
     filters = {
         "Order_ID": Orders.Order_ID,
         "Customer_ID": Orders.Customer_ID,
@@ -446,10 +451,12 @@ def orders():
         "Total_Price": Orders.Total_Price,
         "Date_Of_Order": Orders.Date_Of_Order,
     }
-    if search_field and search_value:
+    if (search_field and search_value) or (range_min and range_min):
         column = filters.get(search_field)
-        if column.type.python_type.__name__ == 'date':
-            orders = Orders.query.filter(Orders.Employee_ID.isnot(None), column == search_value).all()
+        if column.type.python_type.__name__ == 'date' and range_min and range_max:
+            orders = Orders.query.filter(Orders.Employee_ID.isnot(None), column.between(range_min, range_max))
+        elif column.type.python_type.__name__ in ['int', 'float'] and range_min and range_max:
+            orders = Orders.query.filter(Orders.Employee_ID.isnot(None), column.between(float(range_min), float(range_max)))
         else:
             orders = Orders.query.filter(Orders.Employee_ID.isnot(None),
                                          cast(column, String).ilike(f"%{search_value}%")).all()
@@ -467,7 +474,7 @@ def approve_order(order_id):
         flash('Order not found.', 'warning')
         return redirect(url_for('control.orders'))
 
-    order.Employee_ID = Employee.Employee_ID
+    order.Employee_ID = current_user.Employee_ID
     for detail in order.order_details:
         product = Product.query.get(detail.Product_ID)
         if product:
@@ -485,19 +492,21 @@ def approve_order(order_id):
 def purchase_orders():
     search_field = request.args.get('field')
     search_value = request.args.get('value')
+    range_min = request.args.get('range_min')
+    range_max = request.args.get('range_max')
     filters = {
         "Purchase_ID": Purchase.Purchase_ID,
-        "Employee_ID": Purchase.Employee_ID,
         "Date_Of_Purchase": Purchase.Date_Of_Purchase,
         "Total_Price": Purchase.Total_Cost,
     }
-
-    if search_field and search_value:
+    if (search_field and search_value) or(range_min and range_min):
         column = filters.get(search_field)
-        if column.type.python_type.__name__ == 'date':
-            purchases_order = Purchase.query.filter(column == search_value).all()
+        if column.type.python_type.__name__ == 'date' and range_min and range_max:
+            purchases_order = Purchase.query.filter(column.between(range_min, range_max))
+        elif column.type.python_type.__name__ in ['int', 'float'] and range_min and range_max:
+            purchases_order = Purchase.query.filter(column.between(float(range_min), float(range_max)))
         else:
-            purchases_order = Purchase.query.filter(cast(column, String).ilike(f"%{search_value}%")).all()
+            purchases_order = Purchase.query.filter(cast(column, String).ilike(f"%{search_value}%"))
     else:
         purchases_order = Purchase.query.all()
     return render_template('purchase_orders.html', purchases_order=purchases_order, user=current_user)

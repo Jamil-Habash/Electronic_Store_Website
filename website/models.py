@@ -56,7 +56,7 @@ class Model(db.Model):
 # Inventory_Record Table
 class InventoryRecord(db.Model):
     __tablename__ = 'Inventory_Record'
-    Model_ID = db.Column(db.Integer, db.ForeignKey('Model.Model_ID', onupdate='CASCADE'), primary_key=True)
+    Model_ID = db.Column(db.Integer, db.ForeignKey('Model.Model_ID', onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
     Quantity = db.Column(db.Integer)
     model = db.relationship('Model', backref=db.backref('inventory_records', uselist=False))
 
