@@ -350,6 +350,8 @@ def employee_manager():
             employees = Employee.query.filter(column.between(float(range_min), float(range_max)))
         elif search_value:
             employees = Employee.query.filter(cast(column, String).ilike(f"%{search_value}%"))
+        else:
+            employees = Employee.query.all()
     else:
         employees = Employee.query.all()
     return render_template("employee.html", user=current_user, employees=employees)
